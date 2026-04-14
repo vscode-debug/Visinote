@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en" id="mainHtml" class="scroll-smooth dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>AR Camera | VisiNote</title>
+
+    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: { colors: { darkBg: "#000000", accent: "#22d3ee" } },
+        },
+      };
+    </script>
+    
+    <style>
+        * { -webkit-tap-highlight-color: transparent; }
+        html, body { 
+            background: #000 !important; 
+            margin: 0 !important; 
+            width: 100%; 
+            height: 100%; 
+            overflow: hidden;
+            position: fixed;
+        }
+
+        .arjs-loader { display: none !important; }
+        body > video, body > img, body > canvas { display: none !important; }
+
+        #ar-container video {
+            position: absolute !important;
+            top: 0 !important; left: 0 !important;
+            width: 100% !important; height: 100% !important;
+            object-fit: cover !important; 
+            z-index: 1 !important;
+        }
+        .a-canvas { position: absolute !important; z-index: 2 !important; }
+        
+        .action-btn {
+            @apply w-12 h-12 md:w-14 md:h-14 bg-black/60 backdrop-blur-md text-white rounded-2xl flex flex-col items-center justify-center transition-all border border-white/10 active:scale-90 hover:border-cyan-500/50;
+        }
+        .action-btn span { @apply text-[8px] md:text-[9px] font-black uppercase tracking-tighter mt-1; }
+
+        .safe-bottom { bottom: env(safe-area-inset-bottom, 2.5rem); }
+        .safe-top { top: env(safe-area-inset-top, 1.5rem); }
+    </style>
+  </head>
+
+  <body class="flex h-screen overflow-hidden bg-black">
+    
+    <header class="absolute top-0 left-0 right-0 bg-black/40 backdrop-blur-md px-4 py-3 flex justify-between items-center z-[1000] border-b border-white/10">
+        <div class="flex items-center gap-3">
+            <button onclick="window.location.href='dashboard.html'" class="w-9 h-9 rounded-xl bg-white/5 text-white hover:bg-white/20 flex items-center justify-center border border-white/10 transition-colors">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            <h2 class="text-lg font-bold text-white tracking-tight">Spatial View</h2>
+        </div>
+    </header>
+
+    <div id="ar-container" class="flex-1 relative overflow-hidden bg-black w-full h-full pt-16">
+        
+        <a-scene embedded vr-mode-ui="enabled: false" arjs="sourceType: webcam; videoTexture: true; debugUIEnabled: false;" class="w-full h-full">
+            <a-entity id="notesGroup"></a-entity>
+            <a-camera id="arCamera" position="0 1.6 0" look-controls="enabled: true; magicWindowTrackingEnabled: true" cursor="fuse: false; rayOrigin: mouse" raycaster="objects: .raycastable-note"></a-camera>
+        </a-scene>
+
+        <div class="absolute safe-top left-0 right-0 flex justify-center z-[100] pointer-events-none px-4 mt-16">
+            <div id="statusIndicator" class="bg-black/80 backdrop-blur-xl px-4 py-2 rounded-full text-cyan-400 text-[10px] font-black tracking-widest uppercase flex items-center gap-3 border border-cyan-500/20 pointer-events-auto transition-all">
+                <span class="w-1.5 h-1.5 bg-cyan-500 rounded-full animate-pulse" id="statusDot"></span>
+                <span id="statusText">Spatial Tracking Active</span>
+            </div>
+        </div>
+
+        <div class="absolute safe-bottom left-0 right-0 flex justify-center z-[110] px-6 pointer-events-none mb-6">
+            <div class="flex items-center gap-6 pointer-events-auto">
+                <button onclick="window.deleteMode()" class="action-btn">
+                    <i class="fa-solid fa-trash-can text-lg"></i><span>Delete</span>
+                </button>
+                <button onclick="window.openAddNote()" class="w-20 h-20 bg-cyan-600 text-white rounded-[2.5rem] flex flex-col items-center justify-center shadow-[0_0_30px_rgba(34,211,238,0.4)] active:scale-95 transition-all border border-cyan-400/50">
+                    <i class="fa-solid fa-plus text-3xl"></i><span class="text-[9px] font-black uppercase tracking-widest mt-1">Add Note</span>
+                </button>
+                <button onclick="window.editMode()" class="action-btn">
+                    <i class="fa-solid fa-pen-to-square text-lg"></i><span>Edit</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="globalNoteModal" style="display:none;" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
+        <div class="bg-[#0f0f14] w-full max-w-md p-8 rounded-[2rem] border border-white/10 shadow-2xl relative">
+            <button onclick="window.closeGlobalModal()" class="absolute top-6 right-6 text-slate-500 hover:text-white transition-colors">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            <h2 class="text-2xl font-bold mb-6 text-white flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center text-cyan-400"><i class="fa-solid fa-pen-nib"></i></div>
+                New Anchor
+            </h2>
+            <div class="space-y-4">
+                <input type="text" id="globalNoteTitle" placeholder="Anchor Title..." class="w-full px-5 py-4 rounded-2xl bg-black/50 text-white border border-white/10 focus:border-cyan-400 outline-none transition-colors" />
+                <textarea id="globalNoteContent" rows="4" placeholder="What's on your mind?..." class="w-full px-5 py-4 rounded-2xl bg-black/50 text-white border border-white/10 focus:border-cyan-400 outline-none resize-none transition-colors"></textarea>
+                <button id="globalSaveNoteBtn" class="w-full py-4 bg-cyan-500 hover:bg-cyan-400 text-black rounded-2xl font-black text-lg transition-all active:scale-95 shadow-[0_0_20px_rgba(34,211,238,0.3)]">
+                    Save to Space
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, query, where, getDocs, deleteDoc, doc, updateDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDfdbA_iCryNL6JuOkZtSaPH3pEfza_rs0",
+            authDomain: "visinote-66f90.firebaseapp.com",
+            projectId: "visinote-66f90",
+            storageBucket: "visinote-66f90.firebasestorage.app",
+            messagingSenderId: "382835155909",
+            appId: "1:382835155909:web:f7f8f44b85f8cdc1dce1ac"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let isPlacementMode = false;
+        let tempNoteData = null;
+        let isDeleteMode = false;
+        let isEditMode = false;
+
+        // Security Check
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.replace("loginpage.html");
+            } else {
+                currentUser = user;
+                setTimeout(loadARNotes, 1000); 
+            }
+        });
+
+        // Fetch AR Notes
+        window.loadARNotes = async () => {
+            const notesGroup = document.getElementById('notesGroup');
+            if (!notesGroup || !currentUser) return;
+
+            try {
+                const q = query(collection(db, "notes"), where("uid", "==", currentUser.uid));
+                const querySnapshot = await getDocs(q);
+                notesGroup.innerHTML = ''; 
+
+                querySnapshot.forEach((d) => {
+                    const data = d.data();
+                    const noteEntity = document.createElement('a-entity');
+                    noteEntity.setAttribute('position', `${data.x} ${data.y} ${data.z}`);
+                    noteEntity.setAttribute('look-at', '#arCamera');
+                    noteEntity.classList.add('raycastable-note');
+                    
+                    let innerHTML = `
+                        <a-plane color="#000" width="1.6" height="0.9" opacity="0.8" material="transparent: true; shader: flat; side: double"></a-plane>
+                        <a-text value="${(data.title || '').toUpperCase()}" align="center" position="0 0.25 0.05" width="2.5" color="#22d3ee" font="mozillavr"></a-text>
+                        <a-text value="${data.content || ''}" align="center" position="0 -0.1 0.05" width="1.8" color="#ffffff"></a-text>
+                        <a-ring color="#22d3ee" radius-inner="0.02" radius-outer="0.03" position="0 0.45 0.05"></a-ring>
+                    `;
+
+                    if (isDeleteMode) {
+                        innerHTML += `<a-circle color="#ef4444" radius="0.18" position="0.8 0.45 0.08" animation="property: scale; to: 1.1 1.1 1.1; dir: alternate; loop: true; dur: 800"><a-text value="X" align="center" color="#ffffff" width="3" position="0 0 0.01"></a-text></a-circle>`;
+                    } else if (isEditMode) {
+                        innerHTML += `<a-circle color="#a855f7" radius="0.18" position="0.8 0.45 0.08" animation="property: scale; to: 1.1 1.1 1.1; dir: alternate; loop: true; dur: 800"><a-text value="E" align="center" color="#ffffff" width="3" position="0 0 0.01"></a-text></a-circle>`;
+                    }
+
+                    noteEntity.innerHTML = innerHTML;
+                    noteEntity.addEventListener('click', (e) => {
+                        e.stopPropagation(); 
+                        if (isDeleteMode) handleDeleteNote(d.id);
+                        else if (isEditMode) handleEditNote(d.id, data);
+                    });
+                    notesGroup.appendChild(noteEntity);
+                });
+            } catch (err) { console.error("Error loading notes:", err); }
+        };
+
+        // Actions
+        async function handleDeleteNote(noteId) {
+            if (!confirm("Delete this spatial note?")) return;
+            await deleteDoc(doc(db, "notes", noteId));
+            if (navigator.vibrate) navigator.vibrate([50,50,50]);
+            loadARNotes();
+        }
+
+        function handleEditNote(noteId, data) {
+            const titleIn = document.getElementById('globalNoteTitle');
+            const contentIn = document.getElementById('globalNoteContent');
+            const saveBtn = document.getElementById('globalSaveNoteBtn');
+            
+            titleIn.value = data.title;
+            contentIn.value = data.content;
+            saveBtn.innerText = 'Update Note';
+
+            saveBtn.onclick = async () => {
+                if (!titleIn.value || !contentIn.value) return alert("Fill all fields!");
+                saveBtn.innerText = "Updating...";
+                await updateDoc(doc(db, "notes", noteId), { title: titleIn.value, content: contentIn.value });
+                closeGlobalModal();
+                if (navigator.vibrate) navigator.vibrate(50);
+                loadARNotes();
+            };
+            openAddNote();
+        }
+
+        window.deleteMode = () => {
+            isDeleteMode = !isDeleteMode; isEditMode = isPlacementMode = false;
+            updateUIMode("DELETE", isDeleteMode, "bg-red-500/10", "border-red-500", "text-red-400");
+            loadARNotes();
+        };
+        
+        window.editMode = () => {
+            isEditMode = !isEditMode; isDeleteMode = isPlacementMode = false;
+            updateUIMode("EDIT", isEditMode, "bg-purple-500/10", "border-purple-500", "text-purple-400");
+            loadARNotes();
+        };
+        
+        function updateUIMode(text, active, bg, border, color) {
+            const status = document.getElementById('statusText');
+            const ind = document.getElementById('statusIndicator');
+            if (active) {
+                status.innerText = `TAP A NOTE TO ${text}`;
+                ind.className = `${bg} backdrop-blur-xl px-4 py-2 rounded-full ${color} text-[10px] font-black tracking-widest uppercase flex items-center gap-3 border ${border} pointer-events-auto`;
+            } else resetStatusUI();
+        }
+        
+        function resetStatusUI() {
+            document.getElementById('statusText').innerText = "Spatial Tracking Active";
+            document.getElementById('statusIndicator').className = "bg-black/80 backdrop-blur-xl px-4 py-2 rounded-full text-cyan-400 text-[10px] font-black tracking-widest uppercase flex items-center gap-3 border border-cyan-500/20 pointer-events-auto";
+        }
+
+        window.openAddNote = () => {
+            isDeleteMode = isEditMode = isPlacementMode = false;
+            resetStatusUI(); loadARNotes();
+            document.getElementById('globalNoteModal').style.display = 'flex';
+            const saveBtn = document.getElementById('globalSaveNoteBtn');
+            saveBtn.innerText = 'Save to Space';
+            saveBtn.onclick = handleSaveClick; 
+        };
+        
+        window.closeGlobalModal = () => {
+            document.getElementById('globalNoteModal').style.display = 'none';
+            document.getElementById('globalNoteTitle').value = '';
+            document.getElementById('globalNoteContent').value = '';
+        };
+
+        const handleSaveClick = () => {
+            const title = document.getElementById("globalNoteTitle").value.trim();
+            const content = document.getElementById("globalNoteContent").value.trim();
+            if (!title || !content) return alert("Fields cannot be empty!");
+            
+            tempNoteData = { uid: currentUser.uid, title, content };
+            closeGlobalModal();
+            
+            isPlacementMode = true;
+            document.getElementById('statusText').innerText = "TAP SCREEN TO ANCHOR";
+            document.getElementById('statusIndicator').className = "bg-yellow-400/10 backdrop-blur-xl px-4 py-2 rounded-full text-yellow-400 text-[10px] font-black tracking-widest uppercase flex items-center gap-3 border border-yellow-400 pointer-events-auto shadow-[0_0_15px_rgba(250,204,21,0.4)]";
+        };
+
+        const handleSpatialTap = async (e) => {
+            if (!isPlacementMode || !tempNoteData) return;
+            if (e.target.closest('button') || e.target.closest('#globalNoteModal')) return;
+
+            const cameraEl = document.querySelector('#arCamera');
+            if (!cameraEl) return;
+            if (navigator.vibrate) navigator.vibrate(50);
+
+            const worldPos = new THREE.Vector3();
+            cameraEl.object3D.getWorldPosition(worldPos);
+            const direction = new THREE.Vector3(0, 0, -1);
+            direction.applyQuaternion(cameraEl.object3D.quaternion);
+            
+            try {
+                await addDoc(collection(db, "notes"), {
+                    ...tempNoteData,
+                    x: worldPos.x + direction.x * 2.5,
+                    y: worldPos.y + direction.y * 2.5,
+                    z: worldPos.z + direction.z * 2.5,
+                    timestamp: serverTimestamp()
+                });
+                isPlacementMode = false; tempNoteData = null;
+                resetStatusUI(); loadARNotes(); 
+            } catch (err) { console.error(err); }
+        };
+
+        document.addEventListener('touchend', handleSpatialTap);
+        document.addEventListener('click', (e) => { if (e.detail > 0) handleSpatialTap(e); });
+
+        // AR Video Layout Fix
+        window.addEventListener('load', () => {
+            setInterval(() => {
+                const arVideo = document.querySelector('video#arjs-video');
+                if (arVideo) { 
+                    document.getElementById('ar-container').appendChild(arVideo);
+                    arVideo.style.width = "100%"; arVideo.style.height = "100%"; arVideo.style.objectFit = "cover";
+                }
+            }, 500);
+        });
+    </script>
+  </body>
+</html>

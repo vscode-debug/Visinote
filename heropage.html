@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth dark">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VisiNote | Spatial AR/VR Productivity</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: { colors: { darkBg: "#000000", brandPurple: "#8B5CF6" } },
+        },
+      };
+    </script>
+
+    <style>
+      body { font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
+      .scroll-progress { position: fixed; top: 0; left: 0; width: 0%; height: 4px; background: linear-gradient(90deg, #06b6d4, #3b82f6); z-index: 10000; transition: width 0.1s ease; }
+      
+      .purple-gradient-bg {
+        background: radial-gradient(circle at top right, rgba(139, 92, 246, 0.15), transparent),
+                    radial-gradient(circle at bottom left, rgba(76, 29, 149, 0.15), transparent);
+      }
+      .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+      .feature-card:hover { transform: translateY(-10px); border-color: #8B5CF6; box-shadow: 0 10px 30px -10px rgba(139, 92, 246, 0.3); transition: all 0.3s ease; }
+
+      /* 3D Floating Animations */
+      @keyframes float3D {
+        0%, 100% { transform: perspective(1200px) translateY(0) rotateX(2deg) rotateY(-2deg); }
+        50% { transform: perspective(1200px) translateY(-15px) rotateX(-2deg) rotateY(2deg); }
+      }
+      .animate-float-3d { animation: float3D 6s ease-in-out infinite; }
+
+      .btn-3d { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; }
+      .btn-3d:hover { transform: translateY(-4px) translateZ(10px); box-shadow: 0 15px 25px -5px rgba(139, 92, 246, 0.4); }
+
+      /* Background Slideshow */
+      .bg-slide {
+        position: absolute; inset: 0; background-size: cover; background-position: center;
+        opacity: 0; animation: crossfade 15s infinite; transform: scale(1.05); transition: transform 15s linear;
+      }
+      .bg-slide:nth-child(1) { animation-delay: 0s; }
+      .bg-slide:nth-child(2) { animation-delay: 5s; }
+      .bg-slide:nth-child(3) { animation-delay: 10s; }
+      @keyframes crossfade {
+        0% { opacity: 0; transform: scale(1.05); } 10%, 33% { opacity: 1; } 43%, 100% { opacity: 0; transform: scale(1.1); }
+      }
+
+      /* Particles */
+      .particle { position: absolute; background: rgba(6, 182, 212, 0.2); border-radius: 50%; animation: floatY 20s infinite linear; pointer-events: none; }
+      @keyframes floatY {
+          0% { transform: translateY(100vh) scale(0); opacity: 0; }
+          50% { opacity: 0.5; }
+          100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
+      }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-black dark:text-slate-100 relative">
+    <div class="scroll-progress" id="scrollProgress"></div>
+    <div id="particles-container" class="fixed inset-0 pointer-events-none z-10"></div>
+    
+    <nav id="main-navbar" class="fixed top-0 left-0 w-full z-50 transition-all duration-300 bg-transparent py-5 border-b border-transparent">
+      <div class="w-full px-6 md:px-16 flex items-center justify-between">
+        <div class="flex items-center gap-3 cursor-pointer">
+          <div class="w-11 h-11 bg-purple-600 rounded-[14px] flex items-center justify-center shadow-lg border border-white/10">
+            <i class="fa-solid fa-cube text-white text-[22px]"></i>
+          </div>
+          <span id="nav-brand" class="text-2xl font-bold text-white drop-shadow-md">VisiNote</span>
+        </div>
+        
+        <div id="nav-links" class="hidden md:flex gap-10 font-semibold text-sm text-slate-100 drop-shadow-md">
+          <a href="#home" class="hover:text-purple-400 transition-colors">Home</a>
+          <a href="#features" class="hover:text-purple-400 transition-colors">Features</a>
+          <button onclick="document.documentElement.classList.toggle('dark')" class="hover:text-purple-400 transition-colors"><i class="fa-solid fa-moon"></i></button>
+        </div>
+
+        <button onclick="window.location.href='loginpage.html'" class="bg-purple-600 text-white px-8 py-3 rounded-full font-bold btn-3d border border-purple-400/30">
+          Login / Get Started
+        </button>
+      </div>
+    </nav>
+
+    <section id="home" class="relative min-h-screen flex flex-col items-center justify-center pt-20 overflow-hidden bg-black">
+      <div class="absolute inset-0 z-0">
+        <div class="bg-slide" style="background-image: url('https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&q=80&w=2000');"></div>
+        <div class="bg-slide" style="background-image: url('https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&q=80&w=2000');"></div>
+        <div class="bg-slide" style="background-image: url('https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=2000');"></div>
+        <div class="absolute inset-0 bg-black/50 z-10"></div>
+      </div>
+
+      <div class="text-center z-20 px-4 w-full max-w-5xl mx-auto relative flex flex-col items-center">
+        <div class="absolute top-10 md:top-20 -left-4 md:-left-10 bg-yellow-400 p-4 shadow-[0_20px_40px_rgba(0,0,0,0.5)] w-32 h-32 -rotate-6 hidden sm:block rounded-sm animate-float-3d" style="animation-delay: 0s;">
+          <p class="text-xs font-bold text-yellow-900">Buy groceries 🛒</p>
+        </div>
+        <div class="absolute bottom-10 md:bottom-20 -right-4 md:-right-10 bg-cyan-400 p-4 shadow-[0_20px_40px_rgba(0,0,0,0.5)] w-32 h-32 rotate-12 hidden sm:block rounded-sm animate-float-3d" style="animation-delay: 1.5s">
+          <p class="text-xs font-bold text-cyan-900">VR Meeting 🚀</p>
+        </div>
+
+        <span data-aos="fade-down" class="bg-white/20 text-white px-5 py-2 rounded-full text-sm font-bold tracking-widest mb-6 inline-block uppercase backdrop-blur-md border border-white/30 shadow-lg">The Future of Spatial Work</span>
+        <h1 data-aos="fade-up" class="text-5xl md:text-8xl font-extrabold tracking-tighter mb-6 text-white drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)]">
+          The World Is <br /> Your Canvas
+        </h1>
+        <p data-aos="fade-up" data-aos-delay="200" class="text-xl text-slate-200 max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
+          Point your camera at any surface and anchor digital notes in physical space. Transform your environment into a collaborative smart workspace.
+        </p>
+        <button onclick="window.location.href='loginpage.html'" class="px-8 py-4 bg-purple-600 text-white rounded-2xl font-bold text-lg btn-3d" data-aos="fade-up" data-aos-delay="300">
+          Create Free Account
+        </button>
+      </div>
+    </section>
+
+    <section id="features" class="py-24 bg-darkBg border-y border-zinc-800 purple-gradient-bg relative z-20">
+      <div class="max-w-7xl mx-auto px-6">
+        <h2 class="text-4xl font-bold dark:text-white mb-16 text-center" data-aos="fade-up">Powerful Features</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="p-8 rounded-3xl bg-zinc-900/50 border border-zinc-800 feature-card" data-aos="zoom-in">
+            <i class="fa-solid fa-vr-cardboard text-3xl text-purple-500 mb-6 group-hover:scale-110 transition-transform"></i>
+            <h4 class="text-xl font-bold mb-3 dark:text-white">AR Camera Integration</h4>
+            <p class="text-slate-400 text-sm">Overlay digital data onto the physical world with precision.</p>
+          </div>
+          <div class="p-8 rounded-3xl bg-zinc-900/50 border border-zinc-800 feature-card" data-aos="zoom-in" data-aos-delay="100">
+            <i class="fa-solid fa-cloud text-3xl text-purple-500 mb-6 group-hover:scale-110 transition-transform"></i>
+            <h4 class="text-xl font-bold mb-3 dark:text-white">Cloud Sync</h4>
+            <p class="text-slate-400 text-sm">Instantly save your spatial anchors to your Firebase vault.</p>
+          </div>
+          <div class="p-8 rounded-3xl bg-zinc-900/50 border border-zinc-800 feature-card" data-aos="zoom-in" data-aos-delay="200">
+            <i class="fa-solid fa-chart-line text-3xl text-purple-500 mb-6 group-hover:scale-110 transition-transform"></i>
+            <h4 class="text-xl font-bold mb-3 dark:text-white">Dashboard Management</h4>
+            <p class="text-slate-400 text-sm">Manage all your captured data from a centralized hub.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <script>
+      // Initialize Scroll Animations
+      AOS.init({ duration: 1000, once: true });
+
+      // Create Floating Particles
+      const particleContainer = document.getElementById('particles-container');
+      const particleCount = window.innerWidth < 768 ? 10 : 25;
+      for (let i = 0; i < particleCount; i++) {
+          const p = document.createElement('div');
+          p.className = 'particle';
+          p.style.left = Math.random() * 100 + 'vw';
+          p.style.width = p.style.height = Math.random() * 10 + 5 + 'px';
+          p.style.animationDelay = Math.random() * 5 + 's';
+          p.style.opacity = Math.random() * 0.5;
+          particleContainer.appendChild(p);
+      }
+
+      // Scroll Progress & Navbar styling
+      window.addEventListener('scroll', () => {
+        let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+        let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        document.getElementById("scrollProgress").style.width = (winScroll / height) * 100 + "%";
+
+        const navbar = document.getElementById('main-navbar');
+        const navBrand = document.getElementById('nav-brand');
+        const navLinks = document.getElementById('nav-links');
+
+        if (window.scrollY > 20) {
+          navbar.classList.add('bg-white/90', 'dark:bg-[#0a0a0a]/90', 'backdrop-blur-xl', 'shadow-sm', 'border-slate-200', 'dark:border-zinc-800');
+          navbar.classList.remove('bg-transparent', 'border-transparent');
+          navBrand.classList.replace('text-white', 'dark:text-white');
+          navBrand.classList.add('text-slate-900');
+          navLinks.classList.replace('text-slate-100', 'dark:text-slate-300');
+          navLinks.classList.add('text-slate-700');
+        } else {
+          navbar.classList.remove('bg-white/90', 'dark:bg-[#0a0a0a]/90', 'backdrop-blur-xl', 'shadow-sm', 'border-slate-200', 'dark:border-zinc-800');
+          navbar.classList.add('bg-transparent', 'border-transparent');
+          navBrand.classList.replace('dark:text-white', 'text-white');
+          navBrand.classList.remove('text-slate-900');
+          navLinks.classList.replace('dark:text-slate-300', 'text-slate-100');
+          navLinks.classList.remove('text-slate-700');
+        }
+      });
+    </script>
+</body>
+</html>
