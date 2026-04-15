@@ -1,218 +1,149 @@
-<!doctype html>
-<html lang="en" id="mainHtml" class="scroll-smooth dark">
-  <head>
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <title>AR Camera | VisiNote</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login | VisiNote</title>
 
-    <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-    <script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script>
-    
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
-    
-    <script>
-      tailwind.config = {
-        darkMode: "class",
-        theme: {
-          extend: { colors: { darkBg: "#000000", accent: "#22d3ee" } },
-        },
-      };
-    </script>
-    
+
     <style>
-        /* Base Styles */
-        body { font-family: 'Plus Jakarta Sans', sans-serif; transition: background-color 0.3s ease; }
-        * { -webkit-tap-highlight-color: transparent; }
-        
-        /* Original Glass Theme */
-        .glass {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .dark .glass { 
-            background: rgba(0, 0, 0, 0.8); 
-            border-bottom: 1px solid #1a1a1a; 
-        }
-
-        /* Button Glows */
-        .btn-glow:hover {
-            box-shadow: 0 0 20px rgba(34, 211, 238, 0.5);
-            transform: scale(1.05);
-        }
-        
-        /* AR Specific Overrides */
-        html, body { 
-            background: #000 !important; margin: 0 !important; 
-            width: 100%; height: 100%; overflow: hidden; position: fixed; 
-        }
-        .arjs-loader { display: none !important; }
-        body > video, body > img, body > canvas { display: none !important; }
-
-        #ar-container video {
-            position: absolute !important; top: 0 !important; left: 0 !important;
-            width: 100% !important; height: 100% !important;
-            object-fit: cover !important; z-index: 1 !important;
-        }
-
-        .a-canvas { position: absolute !important; z-index: 2 !important; }
-        
-        .action-btn {
-            @apply w-12 h-12 md:w-14 md:h-14 bg-black/60 backdrop-blur-md text-white rounded-2xl flex flex-col items-center justify-center transition-all border border-white/10 active:scale-90 hover:border-cyan-500/50;
-        }
-        .action-btn span { @apply text-[8px] md:text-[9px] font-black uppercase tracking-tighter mt-1; }
-
-        .safe-bottom { bottom: env(safe-area-inset-bottom, 2.5rem); }
-        .safe-top { top: env(safe-area-inset-top, 1.5rem); }
-    </style>
-  </head>
-
-  <body class="flex h-screen overflow-hidden bg-black text-white">
-    
-    <aside id="app-sidebar" class="w-64 glass dark:bg-black/60 border-r border-white/5 flex flex-col justify-between hidden md:flex z-40 h-full transition-all duration-300 relative backdrop-blur-xl">
-        <button onclick="toggleSidebar()" class="absolute -right-3 top-8 w-6 h-6 bg-cyan-600 hover:bg-cyan-500 text-white rounded-full flex items-center justify-center shadow-lg transition z-50">
-            <i id="sidebarToggleIcon" class="fa-solid fa-chevron-left text-[10px]"></i>
-        </button>
-
-        <div class="p-6 overflow-hidden">
-            <div class="flex items-center gap-3 mb-12 cursor-pointer" onclick="window.location.href='dashboard.html'">
-                <div class="w-8 h-8 shrink-0 bg-cyan-500 rounded-lg flex items-center justify-center shadow-lg">
-                    <div class="border-2 border-white w-4 h-4 rotate-45"></div>
-                </div>
-                <span class="font-bold text-2xl tracking-tighter dark:text-white sidebar-text transition-opacity duration-200">VisiNote</span>
-            </div>
-
-            <nav class="flex flex-col gap-2">
-                <a href="dashboard.html" class="flex items-center gap-4 px-4 py-3 text-slate-500 hover:text-white hover:bg-white/5 rounded-xl font-medium transition whitespace-nowrap">
-                    <i class="fa-solid fa-layer-group text-lg w-6 text-center shrink-0"></i> 
-                    <span class="sidebar-text transition-opacity duration-200">My Workspace</span>
-                </a>
-                <a href="ar-camera.html" class="flex items-center gap-4 px-4 py-3 bg-cyan-500/10 text-cyan-400 rounded-xl font-bold transition whitespace-nowrap">
-                    <i class="fa-solid fa-camera text-lg w-6 text-center shrink-0"></i> 
-                    <span class="sidebar-text transition-opacity duration-200">AR Camera</span>
-                </a>
-                <a href="#" class="flex items-center gap-4 px-4 py-3 text-slate-500 hover:text-white hover:bg-white/5 rounded-xl font-medium transition whitespace-nowrap">
-                    <i class="fa-solid fa-gear text-lg w-6 text-center shrink-0"></i> 
-                    <span class="sidebar-text transition-opacity duration-200">Settings</span>
-                </a>
-            </nav>
-        </div>
-
-        <div class="p-6 border-t border-white/5 overflow-hidden">
-            <button onclick="window.logout()" class="flex items-center gap-4 px-4 py-3 w-full text-red-500 hover:bg-red-500/10 rounded-xl font-bold transition whitespace-nowrap">
-                <i class="fa-solid fa-right-from-bracket text-lg w-6 text-center shrink-0"></i> 
-                <span class="sidebar-text transition-opacity duration-200">Log Out</span>
-            </button>
-        </div>
-    </aside>
-
-    <main class="flex-1 flex flex-col relative overflow-hidden bg-black z-50">
+      body { font-family: 'Plus Jakarta Sans', sans-serif; background: #000; overflow: hidden; perspective: 1200px; }
       
-      <header class="bg-black/20 backdrop-blur-md px-4 md:px-8 py-4 flex justify-between items-center relative z-50 border-b border-white/5">
-          <div class="flex items-center gap-3 md:gap-4">
-              <button onclick="window.location.href='dashboard.html'" class="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-white/5 text-slate-300 hover:text-cyan-400 hover:bg-white/10 transition flex items-center justify-center border border-white/10">
-                  <i class="fa-solid fa-arrow-left text-sm"></i>
-              </button>
-              <div class="flex flex-col">
-                  <h2 class="text-lg md:text-xl font-bold text-white tracking-tight">Spatial View</h2>
-                  <span class="text-[8px] md:text-[10px] text-slate-500 font-bold tracking-widest uppercase" id="currentDate"></span>
-              </div>
-          </div>
+      .premium-glass {
+        background: linear-gradient(135deg, rgba(20,20,20,0.85), rgba(10,10,10,0.95));
+        backdrop-filter: blur(40px); border: 1px solid rgba(139,92,246,0.3);
+        box-shadow: 0 40px 80px -20px rgba(0,0,0,0.9), inset 0 1px 0 rgba(139,92,246,0.5);
+      }
 
-          <div class="flex items-center gap-3 md:gap-6 ml-auto">
-              <div class="relative flex items-center group hidden sm:flex">
-                  <input type="text" placeholder="Search spatial notes..." class="w-10 focus:w-48 md:focus:w-64 h-9 md:h-10 pl-9 md:pl-10 pr-4 rounded-xl bg-white/5 border border-white/5 focus:bg-white/10 focus:border-cyan-500/50 text-sm transition-all duration-300 outline-none text-white placeholder-transparent focus:placeholder-slate-500 cursor-pointer focus:cursor-text">
-                  <i class="fa-solid fa-search absolute left-3 md:left-3.5 text-slate-500 pointer-events-none transition-colors group-focus-within:text-cyan-500"></i>
-              </div>
+      /* 3D Pop In Animation for the Modal */
+      @keyframes popIn3D {
+        0% { opacity: 0; transform: perspective(1200px) translateZ(-200px) rotateX(15deg) scale(0.9); }
+        100% { opacity: 1; transform: perspective(1200px) translateZ(0) rotateX(0) scale(1); }
+      }
+      .modal-3d-enter { animation: popIn3D 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
 
-              <button onclick="toggleTheme()" class="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-white/5 text-slate-400 hover:text-cyan-400 hover:bg-white/10 transition flex items-center justify-center border border-white/10">
-                  <i id="themeIcon" class="fa-solid fa-moon text-sm"></i>
-              </button>
-              
-              <div class="relative">
-                  <div class="flex items-center gap-2 md:gap-3 md:pl-6 md:border-l border-white/10 cursor-pointer outline-none text-left" onclick="toggleMobileMenu(event)">
-                      <div class="w-9 h-9 md:w-10 md:h-10 bg-gradient-to-tr from-cyan-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg transition-transform active:scale-90" id="dashUserInitial">U</div>
-                      <div class="hidden sm:block">
-                          <p class="text-xs md:text-sm font-bold text-white leading-none mb-1" id="dashUserName">Loading...</p>
-                          <p class="text-[8px] md:text-[9px] text-cyan-500 uppercase font-black tracking-widest">Active Member</p>
-                      </div>
-                  </div>
+      /* 3D Folding Input Fields */
+      .field-3d-fold {
+        transform-origin: top; transform: perspective(800px) rotateX(-90deg);
+        opacity: 0; max-height: 0; margin-bottom: 0; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .field-3d-fold.show-signup {
+        transform: perspective(800px) rotateX(0deg); opacity: 1; max-height: 100px; margin-bottom: 0.75rem; 
+      }
 
-                  <div id="mobileDropdown" class="absolute right-0 top-14 md:top-16 w-48 md:w-52 bg-zinc-900 border border-white/10 rounded-2xl shadow-2xl flex flex-col p-2 hidden opacity-0 scale-95 transition-all duration-200 origin-top-right z-[100]">
-                      <a href="dashboard.html" class="flex items-center gap-3 px-4 py-3 text-xs md:text-sm font-bold text-white hover:bg-white/5 rounded-xl transition">
-                          <i class="fa-solid fa-layer-group text-cyan-500 w-5"></i> Workspace
-                      </a>
-                      <a href="#" class="flex items-center gap-3 px-4 py-3 text-xs md:text-sm font-bold text-white hover:bg-white/5 rounded-xl transition">
-                          <i class="fa-solid fa-camera text-cyan-500 w-5"></i> AR Camera
-                      </a>
-                      <div class="h-px bg-white/5 my-1"></div>
-                      <button onclick="window.logout()" class="flex items-center gap-3 px-4 py-3 text-xs md:text-sm font-bold text-red-500 hover:bg-red-500/10 rounded-xl transition w-full text-left">
-                          <i class="fa-solid fa-right-from-bracket w-5"></i> Log Out
-                      </button>
-                  </div>
-              </div>
-          </div>
-      </header>
+      /* Buttons & Inputs */
+      .btn-3d { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; }
+      .btn-3d:hover { transform: translateY(-4px) translateZ(10px); box-shadow: 0 15px 25px -5px rgba(139, 92, 246, 0.4); }
+      .btn-3d:active { transform: translateY(2px) translateZ(0); box-shadow: 0 5px 10px -5px rgba(139, 92, 246, 0.4); }
+      
+      .social-btn { transition: all 0.3s ease; border: 1px solid rgba(255,255,255,0.1); }
+      .social-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(139, 92, 246, 0.4); transform: translateY(-2px); }
 
-      <div id="ar-container" class="flex-1 relative overflow-hidden bg-black">
-        <a-scene embedded vr-mode-ui="enabled: false" arjs="sourceType: webcam; videoTexture: true; debugUIEnabled: false;" class="w-full h-full">
-            <a-entity id="notesGroup"></a-entity>
-            <a-camera id="arCamera" position="0 1.6 0" look-controls="enabled: true; magicWindowTrackingEnabled: true" cursor="fuse: false; rayOrigin: mouse" raycaster="objects: .raycastable-note"></a-camera>
-        </a-scene>
+      .input-glow:focus { box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.4), inset 0 0 10px rgba(139, 92, 246, 0.1); }
+      
+      /* Subtle Floating Animation */
+      @keyframes float3D {
+        0%, 100% { transform: perspective(1200px) translateY(0) rotateX(2deg) rotateY(-2deg); }
+        50% { transform: perspective(1200px) translateY(-10px) rotateX(-2deg) rotateY(2deg); }
+      }
+      .animate-float-3d { animation: float3D 6s ease-in-out infinite; }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen text-white relative">
+    
+    <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&q=80&w=2000')] bg-cover opacity-20"></div>
+    <div class="absolute -top-32 -right-32 w-96 h-96 bg-purple-600/30 blur-[100px] rounded-full"></div>
+    <div class="absolute -bottom-32 -left-32 w-96 h-96 bg-cyan-600/20 blur-[100px] rounded-full"></div>
 
-        <div class="absolute safe-top left-0 right-0 flex justify-center z-[100] pointer-events-none px-4">
-            <div id="statusIndicator" class="bg-black/80 backdrop-blur-xl px-4 py-2 rounded-full text-cyan-400 text-[9px] md:text-[10px] font-black tracking-[0.1em] md:tracking-[0.2em] uppercase flex items-center gap-2 md:gap-3 border border-cyan-500/20 pointer-events-auto shadow-none transition-all">
-                <span class="w-1.5 h-1.5 bg-cyan-500 rounded-full animate-pulse" id="statusDot"></span>
-                <span id="statusText">Spatial Tracking Active</span>
+    <button onclick="window.location.href='heropage.html'" class="absolute top-8 left-8 text-slate-400 hover:text-white z-50 flex items-center gap-2 transition-colors">
+        <i class="fa-solid fa-arrow-left"></i> Back to Home
+    </button>
+
+    <div class="premium-glass w-[90%] max-w-md p-10 rounded-[2.5rem] relative z-10 modal-3d-enter animate-float-3d group">
+        
+        <div class="absolute -top-20 -right-20 w-40 h-40 bg-purple-500/20 blur-[50px] rounded-full group-hover:bg-purple-500/30 transition-colors duration-700 pointer-events-none"></div>
+
+        <div class="text-center mb-8 relative z-10">
+            <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-700 rounded-2xl flex items-center justify-center shadow-[0_10px_30px_-10px_rgba(139,92,246,0.6)] mx-auto mb-5 transform transition-transform hover:rotate-12 duration-300">
+                <i class="fa-solid fa-cube text-white text-2xl"></i>
             </div>
+            <h2 class="text-3xl font-bold mb-2 tracking-tight" id="authTitle">Welcome Back</h2>
+            <p class="text-sm text-slate-400 font-medium" id="authSubTitle">Log in to manage your spatial workspace</p>
         </div>
 
-        <div class="absolute safe-bottom left-0 right-0 flex justify-center z-[110] px-6 pointer-events-none">
-            <div class="flex items-center gap-4 md:gap-6 pointer-events-auto">
-                <button onclick="window.deleteMode()" class="action-btn">
-                    <i class="fa-solid fa-trash-can text-base md:text-lg"></i>
-                    <span>Delete</span>
-                </button>
-                
-                <button onclick="window.openAddNote()" class="w-16 h-16 md:w-20 md:h-20 bg-cyan-600 text-white rounded-[2rem] md:rounded-[2.5rem] flex flex-col items-center justify-center shadow-[0_0_30px_rgba(34,211,238,0.4)] active:scale-95 transition-all border border-cyan-400/50">
-                    <i class="fa-solid fa-plus text-2xl md:text-3xl"></i>
-                    <span class="text-[8px] md:text-[9px] font-black uppercase tracking-widest mt-1">Add Note</span>
-                </button>
-                
-                <button onclick="window.editMode()" class="action-btn">
-                    <i class="fa-solid fa-pen-to-square text-base md:text-lg"></i>
-                    <span>Edit</span>
-                </button>
-            </div>
-        </div>
-      </div>
-    </main>
+        <div id="authError" class="hidden bg-red-500/20 border border-red-500 text-red-400 text-xs p-3 rounded-xl mb-4 text-center relative z-10"></div>
 
-    <div id="globalNoteModal" style="display:none;" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
-        <div class="bg-zinc-900 w-full max-w-md p-8 rounded-3xl border border-zinc-800 shadow-2xl relative">
-            <button onclick="window.closeGlobalModal()" class="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors">
-                <i class="fa-solid fa-xmark text-xl"></i>
+        <div class="flex flex-col gap-3 relative z-10">
+            <div id="nameContainer" class="field-3d-fold">
+                <div class="relative">
+                    <i class="fa-solid fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400/80 text-sm"></i>
+                    <input type="text" id="nameInput" placeholder="Full Name" class="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-zinc-700/50 bg-black/40 focus:outline-none input-glow transition-all" />
+                </div>
+            </div>
+
+            <div class="relative">
+                <i class="fa-solid fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-slate-400/80 text-sm"></i>
+                <input type="email" id="emailInput" placeholder="Email address" class="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-zinc-700/50 bg-black/40 focus:outline-none input-glow transition-all" />
+            </div>
+            
+            <div class="relative" id="passwordFieldContainer">
+                <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400/80 text-sm"></i>
+                <input type="password" id="passwordInput" placeholder="Password" class="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-zinc-700/50 bg-black/40 focus:outline-none input-glow transition-all" />
+            </div>
+            
+            <div class="flex justify-end mt-1 mb-1" id="forgotPasswordContainer">
+                <button type="button" onclick="handleForgotPassword()" class="text-xs font-bold text-purple-400 hover:text-purple-300 transition-colors uppercase tracking-wider">Forgot Password?</button>
+            </div>
+
+            <div id="confirmPasswordContainer" class="field-3d-fold">
+                <div class="relative">
+                    <i class="fa-solid fa-shield-check absolute left-4 top-1/2 -translate-y-1/2 text-slate-400/80 text-sm"></i>
+                    <input type="password" id="confirmPasswordInput" placeholder="Confirm Password" class="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-zinc-700/50 bg-black/40 focus:outline-none input-glow transition-all" />
+                </div>
+            </div>
+
+            <button id="mainAuthBtn" class="w-full py-4 mt-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-2xl font-bold tracking-wide btn-3d shadow-[0_10px_20px_-10px_rgba(139,92,246,0.6)]">
+                Log In
             </button>
-            <h2 class="text-2xl font-bold mb-6 text-white flex items-center gap-2">
-                <i class="fa-solid fa-pen-nib text-cyan-500"></i> New Spatial Note
-            </h2>
-            <div class="space-y-4">
-                <input type="text" id="globalNoteTitle" placeholder="Note Title..." class="w-full px-4 py-3 rounded-xl bg-zinc-800 text-white border border-zinc-700 focus:border-cyan-500 outline-none transition-colors" />
-                <textarea id="globalNoteContent" rows="4" placeholder="What's on your mind?..." class="w-full px-4 py-3 rounded-xl bg-zinc-800 text-white border border-zinc-700 focus:border-cyan-500 outline-none resize-none transition-colors"></textarea>
-                <button id="globalSaveNoteBtn" class="w-full py-4 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl font-bold shadow-lg transition-all active:scale-95">
-                    Save to Space
+
+            <div class="flex items-center my-4" id="socialDivider">
+                <div class="flex-grow h-[1px] bg-zinc-700/50"></div>
+                <span class="px-3 text-[10px] text-slate-500 uppercase font-bold tracking-widest">Or connect with</span>
+                <div class="flex-grow h-[1px] bg-zinc-700/50"></div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4" id="socialBtns">
+                <button id="googleLoginBtn" type="button" class="social-btn flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-black/30 text-white text-sm font-semibold backdrop-blur-sm cursor-pointer z-20">
+                    <i class="fa-brands fa-google text-red-500 text-lg"></i> Google
                 </button>
+                <button id="githubLoginBtn" type="button" class="social-btn flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-black/30 text-white text-sm font-semibold backdrop-blur-sm cursor-pointer z-20">
+                    <i class="fa-brands fa-github text-white text-lg"></i> GitHub
+                </button>
+            </div>
+
+            <div class="text-center mt-4 text-sm text-slate-400 font-medium">
+                <span id="toggleText">Don't have an account?</span>
+                <button id="toggleModeBtn" onclick="toggleAuthMode()" class="text-purple-400 font-bold hover:text-purple-300 ml-1 underline-offset-4 hover:underline transition-all">Sign Up</button>
             </div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, collection, query, where, getDocs, deleteDoc, doc, updateDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { 
+            getAuth, 
+            createUserWithEmailAndPassword, 
+            signInWithEmailAndPassword, 
+            onAuthStateChanged, 
+            updateProfile, 
+            sendPasswordResetEmail,
+            GoogleAuthProvider,
+            GithubAuthProvider,
+            signInWithPopup
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDfdbA_iCryNL6JuOkZtSaPH3pEfza_rs0",
@@ -224,240 +155,111 @@
         };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const db = getFirestore(app);
 
-        let currentUser = null;
-        let isPlacementMode = false;
-        let tempNoteData = null;
-        let isDeleteMode = false;
-        let isEditMode = false;
-
-        // UI Helpers (from main.js & dash-layout.js)
-        document.getElementById("currentDate").innerText = new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
-        
-        window.toggleTheme = function() {
-            document.getElementById("mainHtml").classList.toggle("dark");
-            const icon = document.getElementById("themeIcon");
-            if (document.getElementById("mainHtml").classList.contains("dark")) {
-                icon.className = "fa-solid fa-sun text-sm";
-            } else {
-                icon.className = "fa-solid fa-moon text-sm";
-            }
-        };
-
-        window.toggleSidebar = function () {
-            const sidebar = document.getElementById("app-sidebar");
-            const texts = document.querySelectorAll(".sidebar-text");
-            const icon = document.getElementById("sidebarToggleIcon");
-
-            if (sidebar.classList.contains("w-64")) {
-                sidebar.classList.replace("w-64", "w-20");
-                icon.classList.replace("fa-chevron-left", "fa-chevron-right");
-                texts.forEach(t => t.classList.add("hidden"));
-            } else {
-                sidebar.classList.replace("w-20", "w-64");
-                icon.classList.replace("fa-chevron-right", "fa-chevron-left");
-                texts.forEach(t => t.classList.remove("hidden"));
-            }
-        };
-
-        window.toggleMobileMenu = function (e) {
-            e.stopPropagation();
-            const menu = document.getElementById("mobileDropdown");
-            if (menu.classList.contains("hidden")) {
-                menu.classList.remove("hidden");
-                setTimeout(() => { menu.classList.remove("opacity-0", "scale-95"); menu.classList.add("opacity-100", "scale-100"); }, 10);
-            } else {
-                menu.classList.remove("opacity-100", "scale-100");
-                menu.classList.add("opacity-0", "scale-95");
-                setTimeout(() => menu.classList.add("hidden"), 200);
-            }
-        };
-
-        document.addEventListener("click", (e) => {
-            const menu = document.getElementById("mobileDropdown");
-            if (menu && !menu.classList.contains("hidden") && !e.target.closest('#dashUserInitial')) {
-                menu.classList.add("hidden", "opacity-0", "scale-95");
-            }
-        });
-
-        // Security Check
         onAuthStateChanged(auth, (user) => {
-            if (!user) {
-                window.location.replace("loginpage.html");
+            if (user) window.location.replace("dashboard.html");
+        });
+
+        let isLoginMode = true;
+        let isResetMode = false;
+
+        window.toggleAuthMode = () => {
+            isLoginMode = !isLoginMode;
+            isResetMode = false;
+            
+            document.getElementById('passwordFieldContainer').style.display = 'block';
+            document.getElementById('forgotPasswordContainer').style.display = isLoginMode ? 'flex' : 'none';
+            document.getElementById('socialDivider').style.display = 'flex';
+            document.getElementById('socialBtns').style.display = 'grid';
+
+            document.getElementById('authTitle').innerText = isLoginMode ? "Welcome Back" : "Create Account";
+            document.getElementById('authSubTitle').innerText = isLoginMode ? "Log in to manage your spatial workspace" : "Join the future of spatial productivity";
+            document.getElementById('mainAuthBtn').innerText = isLoginMode ? "Log In" : "Sign Up";
+            document.getElementById('toggleText').innerText = isLoginMode ? "Don't have an account?" : "Already have an account?";
+            document.getElementById('toggleModeBtn').innerText = isLoginMode ? "Sign Up" : "Log In";
+            
+            if (isLoginMode) {
+                document.getElementById('nameContainer').classList.remove('show-signup');
+                document.getElementById('confirmPasswordContainer').classList.remove('show-signup');
             } else {
-                currentUser = user;
-                const name = user.displayName || user.email.split('@')[0];
-                document.getElementById('dashUserName').innerText = name;
-                document.getElementById('dashUserInitial').innerText = name[0].toUpperCase();
-                setTimeout(loadARNotes, 1000); 
+                document.getElementById('nameContainer').classList.add('show-signup');
+                document.getElementById('confirmPasswordContainer').classList.add('show-signup');
+            }
+        };
+
+        window.handleForgotPassword = () => {
+            isResetMode = true;
+            document.getElementById('authTitle').innerText = "Reset Password";
+            document.getElementById('authSubTitle').innerText = "Enter your email to receive a reset link";
+            document.getElementById('mainAuthBtn').innerText = "Send Reset Link";
+            
+            document.getElementById('passwordFieldContainer').style.display = 'none';
+            document.getElementById('forgotPasswordContainer').style.display = 'none';
+            document.getElementById('socialDivider').style.display = 'none';
+            document.getElementById('socialBtns').style.display = 'none';
+            document.getElementById('nameContainer').classList.remove('show-signup');
+            document.getElementById('confirmPasswordContainer').classList.remove('show-signup');
+            
+            document.getElementById('toggleText').innerText = "Remember your password?";
+            document.getElementById('toggleModeBtn').innerText = "Back to Log In";
+        };
+
+        // Email & Password Auth
+        document.getElementById('mainAuthBtn').addEventListener('click', async () => {
+            const email = document.getElementById("emailInput").value.trim();
+            const password = document.getElementById("passwordInput").value;
+            const name = document.getElementById("nameInput").value.trim();
+            const errorBox = document.getElementById("authError");
+            errorBox.classList.add("hidden");
+
+            if (!email) return showErr("Please enter an email.");
+
+            try {
+                if (isResetMode) {
+                    await sendPasswordResetEmail(auth, email);
+                    alert("Reset link sent to your email!");
+                    window.toggleAuthMode();
+                } 
+                else if (isLoginMode) {
+                    if (!password) return showErr("Please enter a password.");
+                    await signInWithEmailAndPassword(auth, email, password);
+                } 
+                else {
+                    if (!name || !password) return showErr("Please fill all fields.");
+                    const cred = await createUserWithEmailAndPassword(auth, email, password);
+                    await updateProfile(cred.user, { displayName: name });
+                }
+            } catch (error) {
+                showErr(error.message);
             }
         });
-        
-        window.logout = () => { signOut(auth).then(() => { window.location.replace("loginpage.html"); }); };
 
-        // Fetch AR Notes
-        window.loadARNotes = async () => {
-            const notesGroup = document.getElementById('notesGroup');
-            if (!notesGroup || !currentUser) return;
-
+        // Google Login
+        document.getElementById('googleLoginBtn').addEventListener('click', async () => {
+            const provider = new GoogleAuthProvider();
             try {
-                const q = query(collection(db, "notes"), where("uid", "==", currentUser.uid));
-                const querySnapshot = await getDocs(q);
-                notesGroup.innerHTML = ''; 
-
-                querySnapshot.forEach((d) => {
-                    const data = d.data();
-                    const noteEntity = document.createElement('a-entity');
-                    noteEntity.setAttribute('position', `${data.x} ${data.y} ${data.z}`);
-                    noteEntity.setAttribute('look-at', '#arCamera');
-                    noteEntity.classList.add('raycastable-note');
-                    
-                    let innerHTML = `
-                        <a-plane color="#000" width="1.6" height="0.9" opacity="0.8" material="transparent: true; shader: flat; side: double"></a-plane>
-                        <a-text value="${(data.title || '').toUpperCase()}" align="center" position="0 0.25 0.05" width="2.5" color="#22d3ee" font="mozillavr"></a-text>
-                        <a-text value="${data.content || ''}" align="center" position="0 -0.1 0.05" width="1.8" color="#ffffff"></a-text>
-                        <a-ring color="#22d3ee" radius-inner="0.02" radius-outer="0.03" position="0 0.45 0.05"></a-ring>
-                    `;
-
-                    if (isDeleteMode) {
-                        innerHTML += `<a-circle color="#ef4444" radius="0.18" position="0.8 0.45 0.08" animation="property: scale; to: 1.1 1.1 1.1; dir: alternate; loop: true; dur: 800"><a-text value="X" align="center" color="#ffffff" width="3" position="0 0 0.01"></a-text></a-circle>`;
-                    } else if (isEditMode) {
-                        innerHTML += `<a-circle color="#a855f7" radius="0.18" position="0.8 0.45 0.08" animation="property: scale; to: 1.1 1.1 1.1; dir: alternate; loop: true; dur: 800"><a-text value="E" align="center" color="#ffffff" width="3" position="0 0 0.01"></a-text></a-circle>`;
-                    }
-
-                    noteEntity.innerHTML = innerHTML;
-                    noteEntity.addEventListener('click', (e) => {
-                        e.stopPropagation(); 
-                        if (isDeleteMode) handleDeleteNote(d.id);
-                        else if (isEditMode) handleEditNote(d.id, data);
-                    });
-                    notesGroup.appendChild(noteEntity);
-                });
-            } catch (err) { console.error("Error loading notes:", err); }
-        };
-
-        // Actions
-        async function handleDeleteNote(noteId) {
-            if (!confirm("Delete this spatial note?")) return;
-            await deleteDoc(doc(db, "notes", noteId));
-            if (navigator.vibrate) navigator.vibrate([50,50,50]);
-            loadARNotes();
-        }
-
-        function handleEditNote(noteId, data) {
-            const titleIn = document.getElementById('globalNoteTitle');
-            const contentIn = document.getElementById('globalNoteContent');
-            const saveBtn = document.getElementById('globalSaveNoteBtn');
-            
-            titleIn.value = data.title;
-            contentIn.value = data.content;
-            saveBtn.innerText = 'Update Note';
-
-            saveBtn.onclick = async () => {
-                if (!titleIn.value || !contentIn.value) return alert("Fill all fields!");
-                saveBtn.innerText = "Updating...";
-                await updateDoc(doc(db, "notes", noteId), { title: titleIn.value, content: contentIn.value });
-                closeGlobalModal();
-                if (navigator.vibrate) navigator.vibrate(50);
-                loadARNotes();
-            };
-            document.getElementById('globalNoteModal').style.display = 'flex';
-        }
-
-        window.deleteMode = () => {
-            isDeleteMode = !isDeleteMode; isEditMode = isPlacementMode = false;
-            updateUIMode("DELETE", isDeleteMode, "bg-red-500/10", "border-red-500", "text-red-400", "shadow-[0_0_15px_rgba(239,68,68,0.4)]");
-            loadARNotes();
-        };
-        
-        window.editMode = () => {
-            isEditMode = !isEditMode; isDeleteMode = isPlacementMode = false;
-            updateUIMode("EDIT", isEditMode, "bg-purple-500/10", "border-purple-500", "text-purple-400", "shadow-[0_0_15px_rgba(168,85,247,0.4)]");
-            loadARNotes();
-        };
-        
-        function updateUIMode(text, active, bg, border, color, shadow) {
-            const status = document.getElementById('statusText');
-            const ind = document.getElementById('statusIndicator');
-            if (active) {
-                status.innerText = `TAP A NOTE TO ${text}`;
-                ind.className = `${bg} backdrop-blur-xl px-4 py-2 rounded-full ${color} text-[9px] md:text-[10px] font-black tracking-[0.1em] md:tracking-[0.2em] uppercase flex items-center gap-2 md:gap-3 border ${border} pointer-events-auto ${shadow}`;
-            } else resetStatusUI();
-        }
-        
-        function resetStatusUI() {
-            document.getElementById('statusText').innerText = "Spatial Tracking Active";
-            document.getElementById('statusIndicator').className = "bg-black/80 backdrop-blur-xl px-4 py-2 rounded-full text-cyan-400 text-[9px] md:text-[10px] font-black tracking-[0.1em] md:tracking-[0.2em] uppercase flex items-center gap-2 md:gap-3 border border-cyan-500/20 pointer-events-auto shadow-none";
-        }
-
-        window.openAddNote = () => {
-            isDeleteMode = isEditMode = isPlacementMode = false;
-            resetStatusUI(); loadARNotes();
-            document.getElementById('globalNoteModal').style.display = 'flex';
-            const saveBtn = document.getElementById('globalSaveNoteBtn');
-            saveBtn.innerText = 'Save to Space';
-            saveBtn.onclick = handleSaveClick; 
-        };
-        
-        window.closeGlobalModal = () => {
-            document.getElementById('globalNoteModal').style.display = 'none';
-            document.getElementById('globalNoteTitle').value = '';
-            document.getElementById('globalNoteContent').value = '';
-        };
-
-        const handleSaveClick = () => {
-            const title = document.getElementById("globalNoteTitle").value.trim();
-            const content = document.getElementById("globalNoteContent").value.trim();
-            if (!title || !content) return alert("Fields cannot be empty!");
-            
-            tempNoteData = { uid: currentUser.uid, title, content };
-            closeGlobalModal();
-            
-            isPlacementMode = true;
-            document.getElementById('statusText').innerText = "TAP SCREEN TO ANCHOR";
-            document.getElementById('statusIndicator').className = "bg-yellow-400/10 backdrop-blur-xl px-4 py-2 rounded-full text-yellow-400 text-[9px] md:text-[10px] font-black tracking-[0.1em] md:tracking-[0.2em] uppercase flex items-center gap-2 md:gap-3 border border-yellow-400 pointer-events-auto shadow-[0_0_15px_rgba(250,204,21,0.4)]";
-        };
-
-        const handleSpatialTap = async (e) => {
-            if (!isPlacementMode || !tempNoteData) return;
-            if (e.target.closest('button') || e.target.closest('.action-btn') || e.target.closest('#globalNoteModal')) return;
-
-            const cameraEl = document.querySelector('#arCamera');
-            if (!cameraEl) return;
-            if (navigator.vibrate) navigator.vibrate(50);
-
-            const worldPos = new THREE.Vector3();
-            cameraEl.object3D.getWorldPosition(worldPos);
-            const direction = new THREE.Vector3(0, 0, -1);
-            direction.applyQuaternion(cameraEl.object3D.quaternion);
-            
-            try {
-                await addDoc(collection(db, "notes"), {
-                    ...tempNoteData,
-                    x: worldPos.x + direction.x * 2.5,
-                    y: worldPos.y + direction.y * 2.5,
-                    z: worldPos.z + direction.z * 2.5,
-                    timestamp: serverTimestamp()
-                });
-                isPlacementMode = false; tempNoteData = null;
-                resetStatusUI(); loadARNotes(); 
-            } catch (err) { console.error(err); }
-        };
-
-        document.addEventListener('touchend', handleSpatialTap);
-        document.addEventListener('click', (e) => { if (e.detail > 0) handleSpatialTap(e); });
-
-        // AR Video Resize for Mobile
-        window.addEventListener('load', () => {
-            setInterval(() => {
-                const arVideo = document.querySelector('video#arjs-video');
-                if (arVideo) { 
-                    document.getElementById('ar-container').appendChild(arVideo);
-                    arVideo.style.width = "100%"; arVideo.style.height = "100%"; arVideo.style.objectFit = "cover";
-                }
-            }, 500);
+                await signInWithPopup(auth, provider);
+            } catch (error) {
+                showErr(error.message);
+            }
         });
+
+        // GitHub Login
+        document.getElementById('githubLoginBtn').addEventListener('click', async () => {
+            const provider = new GithubAuthProvider();
+            try {
+                await signInWithPopup(auth, provider);
+            } catch (error) {
+                showErr(error.message);
+            }
+        });
+
+        function showErr(msg) {
+            const eb = document.getElementById("authError");
+            // Clean up Firebase error messages to be more user-friendly
+            eb.innerText = msg.replace('Firebase: ', '');
+            eb.classList.remove("hidden");
+        }
     </script>
-  </body>
+</body>
 </html>
