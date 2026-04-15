@@ -6,10 +6,10 @@
     <title>AR Camera | VisiNote</title>
 
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
     
     <script>
       tailwind.config = {
@@ -18,103 +18,161 @@
           extend: { colors: { darkBg: "#000000", accent: "#22d3ee" } },
         },
       };
+
+      // --- CUSTOM WEBXR SURFACE DETECTION COMPONENT ---
+      AFRAME.registerComponent('surface-reticle', {
+        init: function () {
+            this.xrHitTestSource = null;
+            this.viewerSpace = null;
+            this.refSpace = null;
+            this.el.setAttribute('visible', false);
+            window.surfaceFound = false;
+            window.surfacePosition = null;
+
+            this.el.sceneEl.renderer.xr.addEventListener('sessionstart', async () => {
+                let session = this.el.sceneEl.renderer.xr.getSession();
+                this.viewerSpace = await session.requestReferenceSpace('viewer');
+                this.refSpace = await session.requestReferenceSpace('local');
+                this.xrHitTestSource = await session.requestHitTestSource({ space: this.viewerSpace });
+            });
+        },
+        tick: function () {
+            if (this.el.sceneEl.is('ar-mode') && this.xrHitTestSource) {
+                let frame = this.el.sceneEl.frame;
+                if (!frame) return;
+                let hitTestResults = frame.getHitTestResults(this.xrHitTestSource);
+                
+                if (hitTestResults.length > 0) {
+                    let pose = hitTestResults[0].getPose(this.refSpace);
+                    this.el.setAttribute('position', pose.transform.position);
+                    this.el.setAttribute('visible', true);
+                    window.surfaceFound = true;
+                    window.surfacePosition = pose.transform.position;
+                } else {
+                    this.el.setAttribute('visible', false);
+                    window.surfaceFound = false;
+                    window.surfacePosition = null;
+                }
+            }
+        }
+      });
     </script>
     
     <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #000; overflow: hidden; }
         * { -webkit-tap-highlight-color: transparent; }
-        html, body { 
-            background: #000 !important; 
-            margin: 0 !important; 
-            width: 100%; 
-            height: 100%; 
-            overflow: hidden;
-            position: fixed;
-        }
-
-        .arjs-loader { display: none !important; }
-        body > video, body > img, body > canvas { display: none !important; }
-
-        #ar-container video {
-            position: absolute !important;
-            top: 0 !important; left: 0 !important;
-            width: 100% !important; height: 100% !important;
-            object-fit: cover !important; 
-            z-index: 1 !important;
-        }
-        .a-canvas { position: absolute !important; z-index: 2 !important; }
         
-        .action-btn {
-            @apply w-12 h-12 md:w-14 md:h-14 bg-black/60 backdrop-blur-md text-white rounded-2xl flex flex-col items-center justify-center transition-all border border-white/10 active:scale-90 hover:border-cyan-500/50;
-        }
+        .glass { background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(12px); border-bottom: 1px solid #1a1a1a; }
+        .action-btn { @apply w-12 h-12 md:w-14 md:h-14 bg-black/60 backdrop-blur-md text-white rounded-2xl flex flex-col items-center justify-center transition-all border border-white/10 active:scale-90 hover:border-cyan-500/50; }
         .action-btn span { @apply text-[8px] md:text-[9px] font-black uppercase tracking-tighter mt-1; }
-
         .safe-bottom { bottom: env(safe-area-inset-bottom, 2.5rem); }
         .safe-top { top: env(safe-area-inset-top, 1.5rem); }
+
+        /* Move default AR button up so it doesn't hide behind custom UI */
+        .a-enter-vr { bottom: 120px !important; z-index: 1000 !important;}
     </style>
   </head>
 
-  <body class="flex h-screen overflow-hidden bg-black">
+  <body class="text-white">
     
-    <header class="absolute top-0 left-0 right-0 bg-black/40 backdrop-blur-md px-4 py-3 flex justify-between items-center z-[1000] border-b border-white/10">
-        <div class="flex items-center gap-3">
-            <button onclick="window.location.href='dashboard.html'" class="w-9 h-9 rounded-xl bg-white/5 text-white hover:bg-white/20 flex items-center justify-center border border-white/10 transition-colors">
-                <i class="fa-solid fa-arrow-left"></i>
-            </button>
-            <h2 class="text-lg font-bold text-white tracking-tight">Spatial View</h2>
-        </div>
-    </header>
-
-    <div id="ar-container" class="flex-1 relative overflow-hidden bg-black w-full h-full pt-16">
+    <div id="ui-overlay" class="absolute inset-0 w-full h-full pointer-events-none z-[100] flex">
         
-        <a-scene embedded vr-mode-ui="enabled: false" arjs="sourceType: webcam; videoTexture: true; debugUIEnabled: false;" class="w-full h-full">
-            <a-entity id="notesGroup"></a-entity>
-            <a-camera id="arCamera" position="0 1.6 0" look-controls="enabled: true; magicWindowTrackingEnabled: true" cursor="fuse: false; rayOrigin: mouse" raycaster="objects: .raycastable-note"></a-camera>
-        </a-scene>
-
-        <div class="absolute safe-top left-0 right-0 flex justify-center z-[100] pointer-events-none px-4 mt-16">
-            <div id="statusIndicator" class="bg-black/80 backdrop-blur-xl px-4 py-2 rounded-full text-cyan-400 text-[10px] font-black tracking-widest uppercase flex items-center gap-3 border border-cyan-500/20 pointer-events-auto transition-all">
-                <span class="w-1.5 h-1.5 bg-cyan-500 rounded-full animate-pulse" id="statusDot"></span>
-                <span id="statusText">Spatial Tracking Active</span>
-            </div>
-        </div>
-
-        <div class="absolute safe-bottom left-0 right-0 flex justify-center z-[110] px-6 pointer-events-none mb-6">
-            <div class="flex items-center gap-6 pointer-events-auto">
-                <button onclick="window.deleteMode()" class="action-btn">
-                    <i class="fa-solid fa-trash-can text-lg"></i><span>Delete</span>
-                </button>
-                <button onclick="window.openAddNote()" class="w-20 h-20 bg-cyan-600 text-white rounded-[2.5rem] flex flex-col items-center justify-center shadow-[0_0_30px_rgba(34,211,238,0.4)] active:scale-95 transition-all border border-cyan-400/50">
-                    <i class="fa-solid fa-plus text-3xl"></i><span class="text-[9px] font-black uppercase tracking-widest mt-1">Add Note</span>
-                </button>
-                <button onclick="window.editMode()" class="action-btn">
-                    <i class="fa-solid fa-pen-to-square text-lg"></i><span>Edit</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div id="globalNoteModal" style="display:none;" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
-        <div class="bg-[#0f0f14] w-full max-w-md p-8 rounded-[2rem] border border-white/10 shadow-2xl relative">
-            <button onclick="window.closeGlobalModal()" class="absolute top-6 right-6 text-slate-500 hover:text-white transition-colors">
-                <i class="fa-solid fa-xmark text-xl"></i>
+        <aside id="app-sidebar" class="w-64 glass border-r border-white/5 flex flex-col justify-between hidden md:flex h-full transition-all duration-300 relative pointer-events-auto">
+            <button onclick="toggleSidebar()" class="absolute -right-3 top-8 w-6 h-6 bg-cyan-600 hover:bg-cyan-500 text-white rounded-full flex items-center justify-center shadow-lg transition">
+                <i id="sidebarToggleIcon" class="fa-solid fa-chevron-left text-[10px]"></i>
             </button>
-            <h2 class="text-2xl font-bold mb-6 text-white flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center text-cyan-400"><i class="fa-solid fa-pen-nib"></i></div>
-                New Anchor
-            </h2>
-            <div class="space-y-4">
-                <input type="text" id="globalNoteTitle" placeholder="Anchor Title..." class="w-full px-5 py-4 rounded-2xl bg-black/50 text-white border border-white/10 focus:border-cyan-400 outline-none transition-colors" />
-                <textarea id="globalNoteContent" rows="4" placeholder="What's on your mind?..." class="w-full px-5 py-4 rounded-2xl bg-black/50 text-white border border-white/10 focus:border-cyan-400 outline-none resize-none transition-colors"></textarea>
-                <button id="globalSaveNoteBtn" class="w-full py-4 bg-cyan-500 hover:bg-cyan-400 text-black rounded-2xl font-black text-lg transition-all active:scale-95 shadow-[0_0_20px_rgba(34,211,238,0.3)]">
-                    Save to Space
+            <div class="p-6 overflow-hidden">
+                <div class="flex items-center gap-3 mb-12 cursor-pointer" onclick="window.location.href='dashboard.html'">
+                    <div class="w-8 h-8 shrink-0 bg-cyan-500 rounded-lg flex items-center justify-center shadow-lg">
+                        <div class="border-2 border-white w-4 h-4 rotate-45"></div>
+                    </div>
+                    <span class="font-bold text-2xl tracking-tighter text-white sidebar-text">VisiNote</span>
+                </div>
+                <nav class="flex flex-col gap-2">
+                    <a href="dashboard.html" class="flex items-center gap-4 px-4 py-3 text-slate-500 hover:text-white hover:bg-white/5 rounded-xl font-medium transition whitespace-nowrap">
+                        <i class="fa-solid fa-layer-group text-lg w-6 text-center shrink-0"></i> 
+                        <span class="sidebar-text">My Workspace</span>
+                    </a>
+                    <a href="#" class="flex items-center gap-4 px-4 py-3 bg-cyan-500/10 text-cyan-400 rounded-xl font-bold transition whitespace-nowrap">
+                        <i class="fa-solid fa-camera text-lg w-6 text-center shrink-0"></i> 
+                        <span class="sidebar-text">AR Camera</span>
+                    </a>
+                </nav>
+            </div>
+            <div class="p-6 border-t border-white/5">
+                <button onclick="window.logout()" class="flex items-center gap-4 px-4 py-3 w-full text-red-500 hover:bg-red-500/10 rounded-xl font-bold transition whitespace-nowrap">
+                    <i class="fa-solid fa-right-from-bracket text-lg w-6 text-center shrink-0"></i> 
+                    <span class="sidebar-text">Log Out</span>
                 </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 flex flex-col relative pointer-events-none">
+            <header class="bg-black/20 backdrop-blur-md px-4 md:px-8 py-4 flex justify-between items-center border-b border-white/5 pointer-events-auto">
+                <div class="flex items-center gap-3 md:gap-4">
+                    <button onclick="window.location.href='dashboard.html'" class="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-white/5 text-slate-300 hover:text-cyan-400 hover:bg-white/10 transition flex items-center justify-center border border-white/10">
+                        <i class="fa-solid fa-arrow-left text-sm"></i>
+                    </button>
+                    <div class="flex flex-col">
+                        <h2 class="text-lg md:text-xl font-bold text-white tracking-tight">Spatial View</h2>
+                        <span class="text-[8px] md:text-[10px] text-slate-500 font-bold tracking-widest uppercase">Click AR at bottom right</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="absolute safe-top left-0 right-0 flex justify-center px-4 mt-20 pointer-events-none">
+                <div id="statusIndicator" class="bg-black/80 backdrop-blur-xl px-4 py-2 rounded-full text-cyan-400 text-[9px] md:text-[10px] font-black tracking-widest uppercase flex items-center gap-2 border border-cyan-500/20 transition-all shadow-lg pointer-events-auto">
+                    <span class="w-1.5 h-1.5 bg-cyan-500 rounded-full animate-pulse" id="statusDot"></span>
+                    <span id="statusText">Wait for Cyan Ring on Surface</span>
+                </div>
+            </div>
+
+            <div class="absolute safe-bottom left-0 right-0 flex justify-center px-6 pointer-events-none">
+                <div class="flex items-center gap-4 md:gap-6 pointer-events-auto">
+                    <button onclick="window.deleteMode()" class="action-btn">
+                        <i class="fa-solid fa-trash-can text-base md:text-lg"></i><span>Delete</span>
+                    </button>
+                    <button onclick="window.openAddNote()" class="w-16 h-16 md:w-20 md:h-20 bg-cyan-600 text-white rounded-[2rem] md:rounded-[2.5rem] flex flex-col items-center justify-center shadow-[0_0_30px_rgba(34,211,238,0.4)] active:scale-95 transition-all border border-cyan-400/50">
+                        <i class="fa-solid fa-plus text-2xl md:text-3xl"></i>
+                        <span class="text-[8px] md:text-[9px] font-black uppercase tracking-widest mt-1">Add Note</span>
+                    </button>
+                    <button onclick="window.editMode()" class="action-btn">
+                        <i class="fa-solid fa-pen-to-square text-base md:text-lg"></i><span>Edit</span>
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <div id="globalNoteModal" style="display:none;" class="absolute inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 pointer-events-auto">
+            <div class="bg-zinc-900 w-full max-w-md p-8 rounded-3xl border border-zinc-800 shadow-2xl relative">
+                <button onclick="window.closeGlobalModal()" class="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+                <h2 class="text-2xl font-bold mb-6 text-white flex items-center gap-2">
+                    <i class="fa-solid fa-pen-nib text-cyan-500"></i> New Spatial Note
+                </h2>
+                <div class="space-y-4">
+                    <input type="text" id="globalNoteTitle" placeholder="Note Title..." class="w-full px-4 py-3 rounded-xl bg-zinc-800 text-white border border-zinc-700 focus:border-cyan-500 outline-none transition-colors" />
+                    <textarea id="globalNoteContent" rows="4" placeholder="What's on your mind?..." class="w-full px-4 py-3 rounded-xl bg-zinc-800 text-white border border-zinc-700 focus:border-cyan-500 outline-none resize-none transition-colors"></textarea>
+                    <button id="globalSaveNoteBtn" class="w-full py-4 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl font-bold shadow-lg transition-all active:scale-95">
+                        Start Anchoring
+                    </button>
+                </div>
             </div>
         </div>
     </div>
+
+    <a-scene webxr="requiredFeatures: hit-test, local; optionalFeatures: dom-overlay; overlayElement: #ui-overlay" class="absolute inset-0 w-full h-full z-0 pointer-events-none" renderer="alpha: true">
+        <a-entity id="notesGroup"></a-entity>
+        
+        <a-entity id="reticle" surface-reticle geometry="primitive: ring; radiusInner: 0.15; radiusOuter: 0.2" material="color: #22d3ee; shader: flat" rotation="-90 0 0"></a-entity>
+        
+        <a-camera id="arCamera" position="0 1.6 0" look-controls="enabled: false" cursor="fuse: false; rayOrigin: mouse" raycaster="objects: .raycastable-note"></a-camera>
+    </a-scene>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, collection, query, where, getDocs, deleteDoc, doc, updateDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -135,31 +193,43 @@
         let isDeleteMode = false;
         let isEditMode = false;
 
-        // Security Check
+        // Security
         onAuthStateChanged(auth, (user) => {
-            if (!user) {
-                window.location.replace("loginpage.html");
-            } else {
-                currentUser = user;
-                setTimeout(loadARNotes, 1000); 
-            }
+            if (!user) window.location.replace("loginpage.html");
+            else { currentUser = user; setTimeout(loadARNotes, 1000); }
         });
+        
+        window.logout = () => signOut(auth).then(() => window.location.replace("loginpage.html"));
 
-        // Fetch AR Notes
+        // Sidebar logic
+        window.toggleSidebar = function () {
+            const sidebar = document.getElementById("app-sidebar");
+            const texts = document.querySelectorAll(".sidebar-text");
+            const icon = document.getElementById("sidebarToggleIcon");
+            if (sidebar.classList.contains("w-64")) {
+                sidebar.classList.replace("w-64", "w-20");
+                icon.classList.replace("fa-chevron-left", "fa-chevron-right");
+                texts.forEach(t => t.classList.add("hidden"));
+            } else {
+                sidebar.classList.replace("w-20", "w-64");
+                icon.classList.replace("fa-chevron-right", "fa-chevron-left");
+                texts.forEach(t => t.classList.remove("hidden"));
+            }
+        };
+
+        // Fetch Data
         window.loadARNotes = async () => {
             const notesGroup = document.getElementById('notesGroup');
             if (!notesGroup || !currentUser) return;
-
             try {
                 const q = query(collection(db, "notes"), where("uid", "==", currentUser.uid));
                 const querySnapshot = await getDocs(q);
                 notesGroup.innerHTML = ''; 
-
                 querySnapshot.forEach((d) => {
                     const data = d.data();
                     const noteEntity = document.createElement('a-entity');
                     noteEntity.setAttribute('position', `${data.x} ${data.y} ${data.z}`);
-                    noteEntity.setAttribute('look-at', '#arCamera');
+                    noteEntity.setAttribute('look-at', '[camera]'); // Makes note face the user
                     noteEntity.classList.add('raycastable-note');
                     
                     let innerHTML = `
@@ -168,12 +238,8 @@
                         <a-text value="${data.content || ''}" align="center" position="0 -0.1 0.05" width="1.8" color="#ffffff"></a-text>
                         <a-ring color="#22d3ee" radius-inner="0.02" radius-outer="0.03" position="0 0.45 0.05"></a-ring>
                     `;
-
-                    if (isDeleteMode) {
-                        innerHTML += `<a-circle color="#ef4444" radius="0.18" position="0.8 0.45 0.08" animation="property: scale; to: 1.1 1.1 1.1; dir: alternate; loop: true; dur: 800"><a-text value="X" align="center" color="#ffffff" width="3" position="0 0 0.01"></a-text></a-circle>`;
-                    } else if (isEditMode) {
-                        innerHTML += `<a-circle color="#a855f7" radius="0.18" position="0.8 0.45 0.08" animation="property: scale; to: 1.1 1.1 1.1; dir: alternate; loop: true; dur: 800"><a-text value="E" align="center" color="#ffffff" width="3" position="0 0 0.01"></a-text></a-circle>`;
-                    }
+                    if (isDeleteMode) innerHTML += `<a-circle color="#ef4444" radius="0.18" position="0.8 0.45 0.08" animation="property: scale; to: 1.1 1.1 1.1; dir: alternate; loop: true; dur: 800"><a-text value="X" align="center" color="#ffffff" width="3" position="0 0 0.01"></a-text></a-circle>`;
+                    else if (isEditMode) innerHTML += `<a-circle color="#a855f7" radius="0.18" position="0.8 0.45 0.08" animation="property: scale; to: 1.1 1.1 1.1; dir: alternate; loop: true; dur: 800"><a-text value="E" align="center" color="#ffffff" width="3" position="0 0 0.01"></a-text></a-circle>`;
 
                     noteEntity.innerHTML = innerHTML;
                     noteEntity.addEventListener('click', (e) => {
@@ -183,14 +249,13 @@
                     });
                     notesGroup.appendChild(noteEntity);
                 });
-            } catch (err) { console.error("Error loading notes:", err); }
+            } catch (err) { console.error(err); }
         };
 
-        // Actions
         async function handleDeleteNote(noteId) {
             if (!confirm("Delete this spatial note?")) return;
             await deleteDoc(doc(db, "notes", noteId));
-            if (navigator.vibrate) navigator.vibrate([50,50,50]);
+            if (navigator.vibrate) navigator.vibrate(50);
             loadARNotes();
         }
 
@@ -198,11 +263,7 @@
             const titleIn = document.getElementById('globalNoteTitle');
             const contentIn = document.getElementById('globalNoteContent');
             const saveBtn = document.getElementById('globalSaveNoteBtn');
-            
-            titleIn.value = data.title;
-            contentIn.value = data.content;
-            saveBtn.innerText = 'Update Note';
-
+            titleIn.value = data.title; contentIn.value = data.content; saveBtn.innerText = 'Update Note';
             saveBtn.onclick = async () => {
                 if (!titleIn.value || !contentIn.value) return alert("Fill all fields!");
                 saveBtn.innerText = "Updating...";
@@ -211,33 +272,33 @@
                 if (navigator.vibrate) navigator.vibrate(50);
                 loadARNotes();
             };
-            openAddNote();
+            document.getElementById('globalNoteModal').style.display = 'flex';
         }
 
         window.deleteMode = () => {
             isDeleteMode = !isDeleteMode; isEditMode = isPlacementMode = false;
-            updateUIMode("DELETE", isDeleteMode, "bg-red-500/10", "border-red-500", "text-red-400");
+            updateUIMode("DELETE", isDeleteMode, "bg-red-500/10", "border-red-500", "text-red-400", "shadow-[0_0_15px_rgba(239,68,68,0.4)]");
             loadARNotes();
         };
         
         window.editMode = () => {
             isEditMode = !isEditMode; isDeleteMode = isPlacementMode = false;
-            updateUIMode("EDIT", isEditMode, "bg-purple-500/10", "border-purple-500", "text-purple-400");
+            updateUIMode("EDIT", isEditMode, "bg-purple-500/10", "border-purple-500", "text-purple-400", "shadow-[0_0_15px_rgba(168,85,247,0.4)]");
             loadARNotes();
         };
         
-        function updateUIMode(text, active, bg, border, color) {
+        function updateUIMode(text, active, bg, border, color, shadow) {
             const status = document.getElementById('statusText');
             const ind = document.getElementById('statusIndicator');
             if (active) {
                 status.innerText = `TAP A NOTE TO ${text}`;
-                ind.className = `${bg} backdrop-blur-xl px-4 py-2 rounded-full ${color} text-[10px] font-black tracking-widest uppercase flex items-center gap-3 border ${border} pointer-events-auto`;
+                ind.className = `${bg} backdrop-blur-xl px-4 py-2 rounded-full ${color} text-[10px] font-black tracking-widest uppercase flex items-center gap-2 border ${border} pointer-events-auto ${shadow}`;
             } else resetStatusUI();
         }
         
         function resetStatusUI() {
-            document.getElementById('statusText').innerText = "Spatial Tracking Active";
-            document.getElementById('statusIndicator').className = "bg-black/80 backdrop-blur-xl px-4 py-2 rounded-full text-cyan-400 text-[10px] font-black tracking-widest uppercase flex items-center gap-3 border border-cyan-500/20 pointer-events-auto";
+            document.getElementById('statusText').innerText = "Surface tracking active";
+            document.getElementById('statusIndicator').className = "bg-black/80 backdrop-blur-xl px-4 py-2 rounded-full text-cyan-400 text-[10px] font-black tracking-widest uppercase flex items-center gap-2 border border-cyan-500/20 pointer-events-auto";
         }
 
         window.openAddNote = () => {
@@ -245,7 +306,7 @@
             resetStatusUI(); loadARNotes();
             document.getElementById('globalNoteModal').style.display = 'flex';
             const saveBtn = document.getElementById('globalSaveNoteBtn');
-            saveBtn.innerText = 'Save to Space';
+            saveBtn.innerText = 'Start Anchoring';
             saveBtn.onclick = handleSaveClick; 
         };
         
@@ -262,31 +323,31 @@
             
             tempNoteData = { uid: currentUser.uid, title, content };
             closeGlobalModal();
-            
             isPlacementMode = true;
-            document.getElementById('statusText').innerText = "TAP SCREEN TO ANCHOR";
-            document.getElementById('statusIndicator').className = "bg-yellow-400/10 backdrop-blur-xl px-4 py-2 rounded-full text-yellow-400 text-[10px] font-black tracking-widest uppercase flex items-center gap-3 border border-yellow-400 pointer-events-auto shadow-[0_0_15px_rgba(250,204,21,0.4)]";
+            document.getElementById('statusText').innerText = "TAP SCREEN ON RING TO ANCHOR";
+            document.getElementById('statusIndicator').className = "bg-yellow-400/10 backdrop-blur-xl px-4 py-2 rounded-full text-yellow-400 text-[10px] font-black tracking-widest uppercase flex items-center gap-2 border border-yellow-400 pointer-events-auto shadow-[0_0_15px_rgba(250,204,21,0.4)]";
         };
 
+        // NEW: PLACEMENT LOGIC USING SURFACE DETECTION
         const handleSpatialTap = async (e) => {
             if (!isPlacementMode || !tempNoteData) return;
-            if (e.target.closest('button') || e.target.closest('#globalNoteModal')) return;
+            // Ignore taps on UI elements
+            if (e.target.closest('button') || e.target.closest('.action-btn') || e.target.closest('input') || e.target.closest('textarea')) return;
 
-            const cameraEl = document.querySelector('#arCamera');
-            if (!cameraEl) return;
+            // Enforce Surface Detection
+            if (!window.surfaceFound || !window.surfacePosition) {
+                alert("Please look around until the Cyan targeting ring appears on a table or floor!");
+                return;
+            }
+
             if (navigator.vibrate) navigator.vibrate(50);
 
-            const worldPos = new THREE.Vector3();
-            cameraEl.object3D.getWorldPosition(worldPos);
-            const direction = new THREE.Vector3(0, 0, -1);
-            direction.applyQuaternion(cameraEl.object3D.quaternion);
-            
             try {
                 await addDoc(collection(db, "notes"), {
                     ...tempNoteData,
-                    x: worldPos.x + direction.x * 2.5,
-                    y: worldPos.y + direction.y * 2.5,
-                    z: worldPos.z + direction.z * 2.5,
+                    x: window.surfacePosition.x,
+                    y: window.surfacePosition.y + 0.1, // Lift slightly above the physical surface
+                    z: window.surfacePosition.z,
                     timestamp: serverTimestamp()
                 });
                 isPlacementMode = false; tempNoteData = null;
@@ -295,18 +356,7 @@
         };
 
         document.addEventListener('touchend', handleSpatialTap);
-        document.addEventListener('click', (e) => { if (e.detail > 0) handleSpatialTap(e); });
-
-        // AR Video Layout Fix
-        window.addEventListener('load', () => {
-            setInterval(() => {
-                const arVideo = document.querySelector('video#arjs-video');
-                if (arVideo) { 
-                    document.getElementById('ar-container').appendChild(arVideo);
-                    arVideo.style.width = "100%"; arVideo.style.height = "100%"; arVideo.style.objectFit = "cover";
-                }
-            }, 500);
-        });
+        document.addEventListener('click', handleSpatialTap);
     </script>
   </body>
 </html>
