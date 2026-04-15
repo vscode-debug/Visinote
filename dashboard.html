@@ -48,6 +48,22 @@
         background: #22d3ee;
         box-shadow: 0 0 20px rgba(34, 211, 238, 0.3);
       }
+      .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 0 30px rgba(34, 211, 238, 0.5); }
+      .btn-primary:active { transform: translateY(1px); box-shadow: 0 0 10px rgba(34, 211, 238, 0.2); }
+      
+      /* Sidebar */
+      .sidebar { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+      .sidebar.collapsed { width: 80px; }
+      .sidebar.collapsed .sidebar-text { display: none; }
+
+      /* Custom Note Card */
+      .dash-note-card {
+        background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+        padding: 20px; border-radius: 1.5rem; position: relative; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        height: 160px; display: flex; flex-direction: column; justify-content: space-between;
+      }
+      @media (min-width: 768px) { .dash-note-card { height: 200px; } }
+      .dash-note-card:hover { transform: translateY(-5px) scale(1.02); border-color: rgba(34, 211, 238, 0.4); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5); }
       
       /* Mobile Navigation UI */
       .mobile-nav {
@@ -65,26 +81,73 @@
   <body class="text-white flex h-screen overflow-hidden bg-black">
     <div class="space-bg"></div>
     
-    <div id="global-sidebar" class="hidden md:block z-50"></div>
+    <aside id="app-sidebar" class="w-64 glass-panel border-r border-white/5 flex flex-col justify-between hidden md:flex z-40 h-full sidebar">
+        <button onclick="toggleSidebar()" class="absolute -right-3 top-8 w-6 h-6 bg-accent hover:bg-cyan-300 text-black rounded-full flex items-center justify-center shadow-lg transition z-50">
+            <i id="sidebarToggleIcon" class="fa-solid fa-chevron-left text-[10px]"></i>
+        </button>
+
+        <div class="p-6 overflow-hidden">
+            <div class="flex items-center gap-3 mb-12 cursor-pointer">
+                <div class="w-8 h-8 shrink-0 bg-accent rounded-lg flex items-center justify-center shadow-lg">
+                    <div class="border-2 border-black w-4 h-4 rotate-45"></div>
+                </div>
+                <span class="font-bold text-2xl tracking-tighter sidebar-text text-white">VisiNote</span>
+            </div>
+
+            <nav class="flex flex-col gap-2">
+                <a href="#" class="flex items-center gap-4 px-4 py-3 bg-accent/10 text-accent rounded-xl font-bold whitespace-nowrap transition-colors">
+                    <i class="fa-solid fa-layer-group text-lg w-6 text-center shrink-0"></i> 
+                    <span class="sidebar-text">My Workspace</span>
+                </a>
+                <a href="ar-camera.html" class="flex items-center gap-4 px-4 py-3 text-slate-500 hover:text-white hover:bg-white/5 rounded-xl font-medium whitespace-nowrap transition-colors">
+                    <i class="fa-solid fa-camera text-lg w-6 text-center shrink-0"></i> 
+                    <span class="sidebar-text">AR Camera</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="p-6 border-t border-white/5">
+            <button onclick="window.logout()" class="flex items-center gap-4 px-4 py-3 w-full text-red-500 hover:bg-red-500/10 rounded-xl font-bold whitespace-nowrap transition-colors">
+                <i class="fa-solid fa-right-from-bracket text-lg w-6 text-center shrink-0"></i> 
+                <span class="sidebar-text">Log Out</span>
+            </button>
+        </div>
+    </aside>
 
     <main class="flex-1 flex flex-col relative overflow-hidden main-content">
-      <div id="global-dash-header" class="z-40"></div>
+      
+      <header class="bg-black/20 backdrop-blur-md px-4 md:px-8 py-4 flex justify-between items-center relative z-40 border-b border-white/5">
+          <div class="flex flex-col">
+              <h2 class="text-lg md:text-xl font-bold text-white tracking-tight">Dashboard</h2>
+              <span class="text-[8px] md:text-[10px] text-slate-500 font-bold tracking-widest uppercase" id="currentDate"></span>
+          </div>
+
+          <div class="flex items-center gap-6">
+              <div class="flex items-center gap-3 border-l border-white/10 pl-6 cursor-pointer hover:bg-white/5 p-2 rounded-xl transition-colors">
+                  <div class="w-9 h-9 md:w-10 md:h-10 bg-gradient-to-tr from-accent to-purple-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg" id="dashUserInitial">U</div>
+                  <div class="hidden sm:block">
+                      <p class="text-xs md:text-sm font-bold text-white leading-none mb-1" id="dashUserName">Loading...</p>
+                      <p class="text-[8px] md:text-[9px] text-accent uppercase font-black tracking-widest">Active Member</p>
+                  </div>
+              </div>
+          </div>
+      </header>
 
       <div class="flex-1 overflow-y-auto p-4 md:p-12 z-10 space-y-8 md:space-y-12">
         
         <section data-tilt data-tilt-max="1" data-tilt-speed="400">
-          <div class="glass-panel rounded-[2rem] md:rounded-[2.5rem] p-8 md:p-14 flex flex-col md:flex-row justify-between items-center text-center md:text-left relative overflow-hidden">
-            <div class="space-y-4 md:space-y-6 relative z-10">
+          <div class="glass-panel rounded-[2rem] md:rounded-[2.5rem] p-8 md:p-14 flex flex-col md:flex-row justify-between items-center text-center md:text-left relative overflow-hidden transform-style-3d">
+            <div class="space-y-4 md:space-y-6 relative z-10" style="transform: translateZ(30px);">
               <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 border border-accent/20">
                 <span class="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] text-accent">Personal Workspace</span>
               </div>
               <h1 class="text-4xl md:text-7xl font-extrabold tracking-tighter">
-                Hey, <span id="welcomeName" class="text-accent">Anil</span>
+                Hey, <span id="welcomeName" class="text-accent">User</span>
               </h1>
               <p class="text-slate-400 text-sm md:text-lg max-w-md font-medium">Ready to deploy your spatial library?</p>
             </div>
             
-            <button onclick="window.location.href = 'ar-camera.html'" class="mt-8 md:mt-0 w-full md:w-auto px-8 py-4 md:px-10 md:py-5 btn-primary text-black rounded-2xl font-black text-base md:text-lg transition-all flex items-center justify-center gap-4 hover:scale-105 active:scale-95">
+            <button onclick="window.location.href = 'ar-camera.html'" class="mt-8 md:mt-0 w-full md:w-auto px-8 py-4 md:px-10 md:py-5 btn-primary text-black rounded-2xl font-black text-base md:text-lg transition-all flex items-center justify-center gap-4 relative z-10" style="transform: translateZ(40px);">
               <i class="fa-solid fa-cube"></i>
               <span>Enter AR View</span>
             </button>
@@ -95,13 +158,15 @@
           <div class="lg:col-span-8 space-y-6 md:space-y-8">
             <h2 class="text-[10px] md:text-sm font-black uppercase tracking-[0.3em] opacity-40 px-2">Recent Anchors</h2>
             <div id="notesContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-              <div id="createNewBtn" onclick="window.openAddNote()" class="glass-panel border-2 border-dashed border-white/5 rounded-[2rem] md:rounded-[2.5rem] h-[160px] md:h-[200px] flex flex-col items-center justify-center cursor-pointer group hover:bg-white/5">
+              
+              <div onclick="window.openAddNote()" class="glass-panel border-2 border-dashed border-white/5 rounded-[1.5rem] h-[160px] md:h-[200px] flex flex-col items-center justify-center cursor-pointer group hover:bg-white/5 transition-all order-last">
                 <div class="w-12 h-12 md:w-14 md:h-14 rounded-full bg-accent/10 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                   <i class="fa-solid fa-plus text-lg text-accent"></i>
                 </div>
                 <p class="font-bold text-slate-500 group-hover:text-white uppercase tracking-widest text-[9px] md:text-[10px]">New Note</p>
               </div>
-            </div>
+              
+              </div>
           </div>
 
           <div class="lg:col-span-4 space-y-6 md:space-y-8">
@@ -120,7 +185,7 @@
       </div>
 
       <nav class="mobile-nav fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-2xl border-t border-white/10 px-6 py-4 flex justify-between items-center z-[100] pb-[env(safe-area-inset-bottom)]">
-        <a href="dashboard.html" class="flex flex-col items-center gap-1 text-accent">
+        <a href="#" class="flex flex-col items-center gap-1 text-accent">
             <i class="fa-solid fa-house text-lg"></i>
             <span class="text-[8px] font-bold uppercase tracking-widest">Home</span>
         </a>
@@ -142,15 +207,148 @@
       </nav>
     </main>
 
-    <script src="assets/js/dash-layout.js"></script>
+    <div id="globalNoteModal" style="display:none;" class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
+        <div class="bg-[#0f0f14] w-full max-w-md p-8 rounded-[2rem] border border-white/10 shadow-2xl relative">
+            <button onclick="window.closeGlobalModal()" class="absolute top-6 right-6 text-slate-500 hover:text-white transition-colors">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            <h2 class="text-2xl font-bold mb-6 text-white flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center text-accent"><i class="fa-solid fa-pen-nib"></i></div>
+                New Anchor
+            </h2>
+            <div class="space-y-4">
+                <input type="text" id="globalNoteTitle" placeholder="Anchor Title..." class="w-full px-5 py-4 rounded-2xl bg-black/50 text-white border border-white/10 focus:border-accent outline-none transition-colors" />
+                <textarea id="globalNoteContent" rows="4" placeholder="What's on your mind?..." class="w-full px-5 py-4 rounded-2xl bg-black/50 text-white border border-white/10 focus:border-accent outline-none resize-none transition-colors"></textarea>
+                <button id="globalSaveNoteBtn" class="w-full py-4 mt-2 btn-primary text-black rounded-2xl font-black text-lg transition-all active:scale-95">
+                    Save to Dashboard
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
-        import NoteModal from './assets/js/components/NoteModal.js';
-        NoteModal.inject(); 
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, query, where, onSnapshot, deleteDoc, doc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDfdbA_iCryNL6JuOkZtSaPH3pEfza_rs0",
+            authDomain: "visinote-66f90.firebaseapp.com",
+            projectId: "visinote-66f90",
+            storageBucket: "visinote-66f90.firebasestorage.app",
+            messagingSenderId: "382835155909",
+            appId: "1:382835155909:web:f7f8f44b85f8cdc1dce1ac"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Vanilla Tilt Init
         if(window.innerWidth > 768) {
             VanillaTilt.init(document.querySelectorAll("[data-tilt]"));
         }
+
+        // Set Date
+        document.getElementById("currentDate").innerText = new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+
+        // Sidebar logic
+        window.toggleSidebar = () => {
+            const sidebar = document.getElementById("app-sidebar");
+            const icon = document.getElementById("sidebarToggleIcon");
+            sidebar.classList.toggle('collapsed');
+            icon.classList.toggle('fa-chevron-left');
+            icon.classList.toggle('fa-chevron-right');
+        };
+
+        // Note Modal Logic
+        window.openAddNote = () => document.getElementById('globalNoteModal').style.display = 'flex';
+        window.closeGlobalModal = () => document.getElementById('globalNoteModal').style.display = 'none';
+
+        // Delete Logic
+        window.deleteNote = async (id) => {
+            if (confirm("Delete this spatial anchor?")) {
+                await deleteDoc(doc(db, "notes", id));
+            }
+        };
+
+        // Save Note Logic
+        document.getElementById('globalSaveNoteBtn').addEventListener('click', async () => {
+            const title = document.getElementById("globalNoteTitle").value.trim();
+            const content = document.getElementById("globalNoteContent").value.trim();
+            const user = auth.currentUser;
+            const btn = document.getElementById('globalSaveNoteBtn');
+
+            if (!user) return alert("Login required!");
+            if (!title || !content) return alert("Fields cannot be empty!");
+
+            const oldText = btn.innerText;
+            btn.innerText = "Saving...";
+
+            try {
+                await addDoc(collection(db, "notes"), {
+                    uid: user.uid, title, content, timestamp: serverTimestamp(), x: 0, y: 1.6, z: -2
+                });
+                window.closeGlobalModal();
+                document.getElementById("globalNoteTitle").value = "";
+                document.getElementById("globalNoteContent").value = "";
+                btn.innerText = oldText;
+            } catch (err) {
+                console.error(err);
+                btn.innerText = oldText;
+            }
+        });
+
+        // Firebase Auth & Data Fetching
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                const name = user.displayName || user.email.split('@')[0];
+                document.getElementById('welcomeName').innerText = name;
+                document.getElementById('dashUserName').innerText = name;
+                document.getElementById('dashUserInitial').innerText = name[0].toUpperCase();
+
+                const q = query(collection(db, "notes"), where("uid", "==", user.uid));
+                onSnapshot(q, (snapshot) => {
+                    const container = document.getElementById('notesContainer');
+                    document.getElementById('totalAnchorsCount').innerText = snapshot.size;
+                    
+                    // Remove old notes (keeping the "New Note" button at the end)
+                    const oldNotes = container.querySelectorAll('.dash-note-card');
+                    oldNotes.forEach(note => note.remove());
+
+                    snapshot.forEach((docSnap) => {
+                        const data = docSnap.data();
+                        
+                        // Create Card Element
+                        const card = document.createElement('div');
+                        card.className = "dash-note-card";
+                        card.innerHTML = `
+                            <div>
+                                <h3 class="text-white font-bold text-base md:text-lg mb-1 truncate">${data.title || 'Untitled'}</h3>
+                                <p class="text-slate-400 text-xs md:text-sm mb-4 line-clamp-3">${data.content}</p>
+                            </div>
+                            <div class="mt-auto border-t border-white/10 pt-3">
+                                <p class="text-[8px] md:text-[10px] text-accent font-bold tracking-widest uppercase">
+                                    <i class="fa-solid fa-location-dot"></i> Anchored [${data.x?.toFixed(1)}, ${data.y?.toFixed(1)}]
+                                </p>
+                            </div>
+                            <button onclick="window.deleteNote('${docSnap.id}')" class="absolute top-4 right-4 text-slate-500 hover:text-red-500 transition-colors bg-black/50 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md">
+                                <i class="fa-solid fa-trash text-xs"></i>
+                            </button>
+                        `;
+                        // Insert before the "New Note" button
+                        container.insertBefore(card, container.lastElementChild);
+                    });
+                });
+            } else {
+                window.location.replace("loginpage.html");
+            }
+        });
+
+        // Logout
+        window.logout = () => {
+            signOut(auth).then(() => { window.location.replace("loginpage.html"); });
+        };
     </script>
-    <script type="module" src="assets/js/auth.js"></script> 
-    <script src="assets/js/main.js"></script>
   </body>
 </html>
