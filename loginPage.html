@@ -1,265 +1,734 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
+
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login | VisiNote</title>
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VisiNote | Welcome</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    
     <style>
-      body { font-family: 'Plus Jakarta Sans', sans-serif; background: #000; overflow: hidden; perspective: 1200px; }
-      
-      .premium-glass {
-        background: linear-gradient(135deg, rgba(20,20,20,0.85), rgba(10,10,10,0.95));
-        backdrop-filter: blur(40px); border: 1px solid rgba(139,92,246,0.3);
-        box-shadow: 0 40px 80px -20px rgba(0,0,0,0.9), inset 0 1px 0 rgba(139,92,246,0.5);
-      }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
-      /* 3D Pop In Animation for the Modal */
-      @keyframes popIn3D {
-        0% { opacity: 0; transform: perspective(1200px) translateZ(-200px) rotateX(15deg) scale(0.9); }
-        100% { opacity: 1; transform: perspective(1200px) translateZ(0) rotateX(0) scale(1); }
-      }
-      .modal-3d-enter { animation: popIn3D 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        :root {
+            /* LIGHT THEME GLASSMORPHISM */
+            --bg-main: #1e4b8f; /* Slightly darkened so blobs pop more, or you can keep your #3370cc */        
+            --card-dark: rgba(255, 255, 255, 0.85);
+            --glass-bg: rgba(255, 255, 255, 0.4);  
+            --cyan-accent: #0284c7;      
+            --cyan-glow: rgba(66, 81, 88, 0.2); 
+            
+            --text-main: #0f172a;        
+            --text-muted: #64748b;      
+            --input-bg: rgba(255, 255, 255, 0.7);  
+            --border-color: rgba(15, 23, 42, 0.1); 
+        }
+        * {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            text-decoration: none;
+            list-style: none;
+        }
 
-      /* 3D Folding Input Fields */
-      .field-3d-fold {
-        transform-origin: top; transform: perspective(800px) rotateX(-90deg);
-        opacity: 0; max-height: 0; margin-bottom: 0; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-      }
-      .field-3d-fold.show-signup {
-        transform: perspective(800px) rotateX(0deg); opacity: 1; max-height: 100px; margin-bottom: 0.75rem; 
-      }
+        body {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #112d5c; /* Deepened base background for better blob contrast */
+            position: relative;
+            overflow: hidden;
+            color: var(--text-main);
+            /* Subtle grid background */
+            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
 
-      /* Buttons & Inputs */
-      .btn-3d { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; }
-      .btn-3d:hover { transform: translateY(-4px) translateZ(10px); box-shadow: 0 15px 25px -5px rgba(139, 92, 246, 0.4); }
-      .btn-3d:active { transform: translateY(2px) translateZ(0); box-shadow: 0 5px 10px -5px rgba(139, 92, 246, 0.4); }
-      
-      .social-btn { transition: all 0.3s ease; border: 1px solid rgba(255,255,255,0.1); }
-      .social-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(139, 92, 246, 0.4); transform: translateY(-2px); }
+        /* =========================================
+           ANIMATED BACKGROUND BLOBS (NEW)
+           ========================================= */
+        .bg-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(90px);
+            opacity: 0.7;
+            z-index: 0;
+            pointer-events: none;
+            animation: drift alternate infinite ease-in-out;
+        }
 
-      .input-glow:focus { box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.4), inset 0 0 10px rgba(139, 92, 246, 0.1); }
-      
-      /* Subtle Floating Animation */
-      @keyframes float3D {
-        0%, 100% { transform: perspective(1200px) translateY(0) rotateX(2deg) rotateY(-2deg); }
-        50% { transform: perspective(1200px) translateY(-10px) rotateX(-2deg) rotateY(2deg); }
-      }
-      .animate-float-3d { animation: float3D 6s ease-in-out infinite; }
+        .blob-1 {
+            width: 500px; height: 500px;
+            background: #0284c7; /* Cyan */
+            top: -10%; left: -10%;
+            animation-duration: 20s;
+        }
+
+        .blob-2 {
+            width: 600px; height: 600px;
+            background: #8b5cf6; /* Purple/Violet */
+            bottom: -20%; right: -10%;
+            animation-duration: 25s;
+            animation-delay: -5s;
+        }
+
+        .blob-3 {
+            width: 400px; height: 400px;
+            background: #38bdf8; /* Light Blue */
+            top: 40%; left: 50%;
+            animation-duration: 22s;
+            animation-delay: -10s;
+        }
+
+        @keyframes drift {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(50px, -50px) scale(1.1); }
+            66% { transform: translate(-40px, 60px) scale(0.9); }
+            100% { transform: translate(20px, 20px) scale(1.05); }
+        }
+
+        /* Brand Logo Top Left */
+        .login-brand {
+            position: absolute;
+            top: 40px;
+            left: 50px;
+            display: flex;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .brand-text-login {
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #ffffff; /* Adjusted to white for contrast against dark blue bg */
+        }
+        
+        .brand-text-login span { color: #38bdf8; } /* Lighter cyan for logo span */
+
+        /* =========================================
+           MAIN GLASS CONTAINER
+           ========================================= */
+        .main-container {
+            position: relative;
+            width: 900px;
+            height: 550px;
+            max-width: 95%;
+            background: rgb(30 17 17 / 40%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4),
+                        inset 0 0 20px rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            z-index: 2;
+        }
+
+        /* =========================================
+           THE VORTEX PATH ANIMATION
+           ========================================= */
+        .vortex-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .vortex-mist {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 350px; height: 350px;
+            background: radial-gradient(circle, var(--cyan-glow) 0%, transparent 70%);
+            filter: blur(50px);
+            animation: pulse 4s infinite alternate ease-in-out;
+        }
+
+        .vortex-ring {
+            position: absolute;
+            top: 50%; left: 50%;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.1); /* Adjusted for visibility */
+            transform: translate(-50%, -50%);
+            animation: spin infinite linear;
+        }
+
+        .vortex-ring::after {
+            content: '';
+            position: absolute;
+            top: -4px; left: 50%;
+            width: 8px; height: 8px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 15px 4px var(--cyan-accent);
+        }
+
+        .ring-1 { width: 120px; height: 120px; animation-duration: 4s; border: 1px dashed rgba(255, 255, 255, 0.3); }
+        .ring-2 { width: 240px; height: 240px; animation-duration: 7s; animation-direction: reverse; }
+        .ring-3 { width: 380px; height: 380px; animation-duration: 10s; border: 1px dashed rgba(255, 255, 255, 0.2); }
+        .ring-4 { width: 540px; height: 540px; animation-duration: 14s; animation-direction: reverse; }
+        .ring-5 { width: 720px; height: 720px; animation-duration: 20s; border: 1px dotted rgba(255, 255, 255, 0.15); }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        @keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.5; }
+            100% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+        }
+
+        /* =========================================
+           THE SOLID DARK DASHBOARD PANEL
+           ========================================= */
+        .form-panel {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 50%;
+            height: 100%;
+            background: var(--card-dark);
+            box-shadow: -15px 0 40px rgba(0, 0, 0, 0.1);
+            transition: left 0.7s cubic-bezier(0.68, -0.55, 0.265, 1.15);
+            z-index: 3;
+            overflow: hidden;
+            border-left: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .main-container.register-mode .form-panel {
+            left: 0;
+            box-shadow: 15px 0 40px rgba(0, 0, 0, 0.1);
+            border-left: none;
+            border-right: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        /* =========================================
+           FORM WRAPPERS & FADING
+           ========================================= */
+        .form-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            text-align: center;
+            transition: opacity 0.4s ease, visibility 0.4s;
+        }
+
+        .login-form { opacity: 1; visibility: visible; }
+        .register-form { opacity: 0; visibility: hidden; }
+
+        .main-container.register-mode .login-form { opacity: 0; visibility: hidden; transition-delay: 0s; }
+        .main-container.register-mode .register-form { opacity: 1; visibility: visible; transition-delay: 0.3s; }
+        .main-container:not(.register-mode) .login-form { transition-delay: 0.3s; }
+
+        .cyan-heading {
+            color: var(--cyan-accent);
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            letter-spacing: -0.5px;
+        }
+
+        .form-wrapper p.subtext {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 25px;
+        }
+
+        /* =========================================
+           INPUT FIELDS
+           ========================================= */
+        .input-box {
+            position: relative;
+            margin: 8px 0;
+            width: 100%;
+        }
+        
+        .input-box input {
+            width: 100%;
+            padding: 14px 45px 14px 20px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 14px;
+            color: var(--text-main);
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        
+        .input-box input::placeholder { color: #52525b; font-weight: 500; }
+        
+        .input-box input:focus {
+            border-color: var(--cyan-accent);
+            box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.15);
+        }
+
+        .input-box i.input-icon {
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #52525b;
+            font-size: 15px;
+            pointer-events: none;
+            transition: 0.3s;
+        }
+
+        .input-box input:focus ~ i.input-icon { color: var(--cyan-accent); }
+
+        .input-row { display: flex; gap: 10px; width: 100%; }
+
+        /* =========================================
+           BUTTONS & LINKS
+           ========================================= */
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: var(--cyan-accent);
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 229, 255, 0.2);
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 229, 255, 0.5);
+            background: #0ea5e9;
+        }
+
+        .forgot-link {
+            width: 100%;
+            text-align: right;
+            margin-top: -3px;
+            margin-bottom: 5px;
+        }
+        .forgot-link a { color: var(--text-muted); font-size: 12px; transition: 0.3s; font-weight: 600; }
+        .forgot-link a:hover { color: var(--cyan-accent); }
+
+        .swap-mode {
+            margin-top: 25px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        
+        .swap-link {
+            color: var(--cyan-accent);
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .swap-link:hover { text-shadow: 0 0 10px rgba(0, 229, 255, 0.6); }
+
+        .social-icons { display: flex; gap: 12px; margin-top: 15px; }
+        .social-icons button {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            width: 45px; height: 45px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .social-icons button:hover {
+            border-color: var(--cyan-accent);
+            color: var(--cyan-accent);
+            background: rgba(0, 229, 255, 0.05);
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
+        }
+
+        .ai-btn {
+            position: absolute; right: 10px; top: 50%; transform: translateY(-50%); 
+            background: none; border: none; color: #52525b; font-size: 15px; 
+            cursor: pointer; transition: 0.3s; padding: 5px;
+        }
+        .ai-btn:hover { color: var(--cyan-accent); transform: translateY(-50%) scale(1.15); text-shadow: 0 0 10px var(--cyan-accent); }
+        .fa-spin-fast { animation: fa-spin 0.8s infinite linear; }
+        
+        #ai-greeting { font-style: italic; min-height: 20px; }
+
+        @media (max-width: 768px) {
+            .form-panel { width: 100%; left: 0 !important; border-radius: 24px; box-shadow: none; border: none; }
+            .vortex-container { display: none; }
+        }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen text-white relative">
-    
-    <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&q=80&w=2000')] bg-cover opacity-20"></div>
-    <div class="absolute -top-32 -right-32 w-96 h-96 bg-purple-600/30 blur-[100px] rounded-full"></div>
-    <div class="absolute -bottom-32 -left-32 w-96 h-96 bg-cyan-600/20 blur-[100px] rounded-full"></div>
 
-    <button onclick="window.location.href='heropage.html'" class="absolute top-8 left-8 text-slate-400 hover:text-white z-50 flex items-center gap-2 transition-colors">
-        <i class="fa-solid fa-arrow-left"></i> Back to Home
-    </button>
+<body>
 
-    <div class="premium-glass w-[90%] max-w-md p-10 rounded-[2.5rem] relative z-10 modal-3d-enter animate-float-3d group">
+    <div class="bg-blob blob-1"></div>
+    <div class="bg-blob blob-2"></div>
+    <div class="bg-blob blob-3"></div>
+
+    <div id="floating-notes-bg" style="position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 1;"></div>
+
+    <div class="login-brand">
+        <span class="brand-text-login">Visi<span>Note</span></span>
+    </div>
+
+    <div class="main-container" id="mainContainer">
         
-        <div class="absolute -top-20 -right-20 w-40 h-40 bg-purple-500/20 blur-[50px] rounded-full group-hover:bg-purple-500/30 transition-colors duration-700 pointer-events-none"></div>
-
-        <div class="text-center mb-8 relative z-10">
-            <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-700 rounded-2xl flex items-center justify-center shadow-[0_10px_30px_-10px_rgba(139,92,246,0.6)] mx-auto mb-5 transform transition-transform hover:rotate-12 duration-300">
-                <i class="fa-solid fa-cube text-white text-2xl"></i>
-            </div>
-            <h2 class="text-3xl font-bold mb-2 tracking-tight" id="authTitle">Welcome Back</h2>
-            <p class="text-sm text-slate-400 font-medium" id="authSubTitle">Log in to manage your spatial workspace</p>
+        <div class="vortex-container">
+            <div class="vortex-mist"></div>
+            <div class="vortex-ring ring-1"></div>
+            <div class="vortex-ring ring-2"></div>
+            <div class="vortex-ring ring-3"></div>
+            <div class="vortex-ring ring-4"></div>
+            <div class="vortex-ring ring-5"></div>
         </div>
 
-        <div id="authError" class="hidden bg-red-500/20 border border-red-500 text-red-400 text-xs p-3 rounded-xl mb-4 text-center relative z-10"></div>
-
-        <div class="flex flex-col gap-3 relative z-10">
-            <div id="nameContainer" class="field-3d-fold">
-                <div class="relative">
-                    <i class="fa-solid fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400/80 text-sm"></i>
-                    <input type="text" id="nameInput" placeholder="Full Name" class="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-zinc-700/50 bg-black/40 focus:outline-none input-glow transition-all" />
-                </div>
-            </div>
-
-            <div class="relative">
-                <i class="fa-solid fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-slate-400/80 text-sm"></i>
-                <input type="email" id="emailInput" placeholder="Email address" class="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-zinc-700/50 bg-black/40 focus:outline-none input-glow transition-all" />
-            </div>
+        <div class="form-panel">
             
-            <div class="relative" id="passwordFieldContainer">
-                <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400/80 text-sm"></i>
-                <input type="password" id="passwordInput" placeholder="Password" class="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-zinc-700/50 bg-black/40 focus:outline-none input-glow transition-all" />
-            </div>
-            
-            <div class="flex justify-end mt-1 mb-1" id="forgotPasswordContainer">
-                <button type="button" onclick="handleForgotPassword()" class="text-xs font-bold text-purple-400 hover:text-purple-300 transition-colors uppercase tracking-wider">Forgot Password?</button>
+            <div class="form-wrapper login-form" id="loginForm">
+                <form id="firebase-login" style="width: 100%;">
+                    <h1 class="cyan-heading">Welcome Back</h1>
+                    <p class="subtext" id="ai-greeting">Generating daily inspiration...</p>
+                    
+                    <div class="input-box">
+                        <input type="text" id="login-username" placeholder="Username" required>
+                        <i class="fa-solid fa-user input-icon"></i>
+                    </div>
+                    <div class="input-box">
+                        <input type="password" id="login-password" placeholder="Password" required>
+                        <i class="fa-solid fa-lock input-icon"></i>
+                    </div>
+                    
+                    <div class="forgot-link">
+                        <a href="#" id="forgot-password-link">Forgot Password?</a>
+                    </div>
+                    
+                    <button type="submit" class="btn-submit">Enter Workspace</button>
+                    
+                    <div style="display: flex; justify-content: center; width: 100%;">
+                        <div class="social-icons">
+                            <button type="button" id="google-login"><i class="fa-brands fa-google"></i></button>
+                            <button type="button" id="github-login"><i class="fa-brands fa-github"></i></button>
+                        </div>
+                    </div>
+
+                    <p class="swap-mode">Don't have an account? <span class="swap-link" id="goToRegister">Sign Up</span></p>
+                </form>
             </div>
 
-            <div id="confirmPasswordContainer" class="field-3d-fold">
-                <div class="relative">
-                    <i class="fa-solid fa-shield-check absolute left-4 top-1/2 -translate-y-1/2 text-slate-400/80 text-sm"></i>
-                    <input type="password" id="confirmPasswordInput" placeholder="Confirm Password" class="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-zinc-700/50 bg-black/40 focus:outline-none input-glow transition-all" />
-                </div>
+            <div class="form-wrapper register-form" id="registerForm">
+                <form id="firebase-register" style="width: 100%;">
+                    <h1 class="cyan-heading">New Here?</h1>
+                    <p class="subtext">Deploy your spatial library today.</p>
+                    
+                    <div class="input-row">
+                        <div class="input-box">
+                            <input type="text" id="register-firstname" placeholder="First Name" required>
+                        </div>
+                        <div class="input-box">
+                            <input type="text" id="register-lastname" placeholder="Last Name" required>
+                        </div>
+                    </div>
+
+                    <div class="input-box">
+                        <input type="text" id="register-username" placeholder="Choose Username" required>
+                        <button type="button" id="ai-generate-btn" class="ai-btn" title="Generate AI Username">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        </button>
+                    </div>
+
+                    <div class="input-box">
+                        <input type="email" id="register-email" placeholder="Email Address" required>
+                        <i class="fa-solid fa-envelope input-icon"></i>
+                    </div>
+
+                    <div class="input-box">
+                        <input type="password" id="register-password" placeholder="Password" required>
+                        <i class="fa-solid fa-lock input-icon"></i>
+                    </div>
+
+                    <button type="submit" class="btn-submit">Create Account</button>
+                    
+                    <p class="swap-mode">Already have an account? <span class="swap-link" id="goToLogin">Sign In</span></p>
+                </form>
             </div>
 
-            <button id="mainAuthBtn" class="w-full py-4 mt-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-2xl font-bold tracking-wide btn-3d shadow-[0_10px_20px_-10px_rgba(139,92,246,0.6)]">
-                Log In
-            </button>
-
-            <div class="flex items-center my-4" id="socialDivider">
-                <div class="flex-grow h-[1px] bg-zinc-700/50"></div>
-                <span class="px-3 text-[10px] text-slate-500 uppercase font-bold tracking-widest">Or connect with</span>
-                <div class="flex-grow h-[1px] bg-zinc-700/50"></div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4" id="socialBtns">
-                <button id="googleLoginBtn" type="button" class="social-btn flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-black/30 text-white text-sm font-semibold backdrop-blur-sm cursor-pointer z-20">
-                    <i class="fa-brands fa-google text-red-500 text-lg"></i> Google
-                </button>
-                <button id="githubLoginBtn" type="button" class="social-btn flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-black/30 text-white text-sm font-semibold backdrop-blur-sm cursor-pointer z-20">
-                    <i class="fa-brands fa-github text-white text-lg"></i> GitHub
-                </button>
-            </div>
-
-            <div class="text-center mt-4 text-sm text-slate-400 font-medium">
-                <span id="toggleText">Don't have an account?</span>
-                <button id="toggleModeBtn" onclick="toggleAuthMode()" class="text-purple-400 font-bold hover:text-purple-300 ml-1 underline-offset-4 hover:underline transition-all">Sign Up</button>
-            </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const container = document.getElementById('floating-notes-bg');
+            const numNotes = 100; // Updated to 100 notes
+            const icons = ['fa-file-lines', 'fa-note-sticky', 'fa-pen-to-square', 'fa-cube', 'fa-vr-cardboard'];
+
+            for (let i = 0; i < numNotes; i++) {
+                const note = document.createElement('div');
+                
+                // Pure CSS for the glass note
+                note.style.cssText = `
+                    position: absolute;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    background: rgba(255, 255, 255, 0.05); /* slightly increased for visibility against blobs */
+                    backdrop-filter: blur(4px);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    border-radius: 12px;
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                `;
+                
+                // Random Size (Smaller sizes since there are 100)
+                const size = Math.random() * 40 + 20; 
+                note.style.width = `${size}px`;
+                note.style.height = `${size}px`;
+
+                // Initial Position
+                note.style.left = `${Math.random() * 100}vw`;
+                note.style.top = `${Math.random() * 120}vh`;
+
+                // Add random icon inside
+                const icon = document.createElement('i');
+                icon.className = `fa-solid ${icons[Math.floor(Math.random() * icons.length)]}`;
+                icon.style.color = 'rgba(255, 255, 255, 0.3)';
+                icon.style.fontSize = `${size * 0.4}px`;
+                note.appendChild(icon);
+
+                container.appendChild(note);
+
+                // Anime.js Animation properties
+                anime({
+                    targets: note,
+                    translateY: () => [anime.random(0, 100), anime.random(-600, -1200)],
+                    translateX: () => [anime.random(-50, 50), anime.random(-150, 150)],
+                    rotateZ: () => [anime.random(-20, 20), anime.random(-90, 90)],
+                    rotateX: () => anime.random(-45, 45),
+                    rotateY: () => anime.random(-45, 45),
+                    opacity: [
+                        { value: Math.random() * 0.3 + 0.2, duration: anime.random(2000, 4000) },
+                        { value: 0, duration: anime.random(2000, 4000), delay: anime.random(4000, 10000) }
+                    ],
+                    duration: () => anime.random(15000, 35000), // Slower to handle 100 objects smoothly
+                    easing: 'linear',
+                    loop: true,
+                    delay: () => anime.random(0, 8000) // Stagger start times
+                });
+            }
+        });
+    </script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { 
-            getAuth, 
-            createUserWithEmailAndPassword, 
-            signInWithEmailAndPassword, 
-            onAuthStateChanged, 
-            updateProfile, 
-            sendPasswordResetEmail,
-            GoogleAuthProvider,
-            GithubAuthProvider,
-            signInWithPopup
+            getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+            GoogleAuthProvider, GithubAuthProvider, signInWithPopup, sendPasswordResetEmail
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, query, where, getDocs, setDoc, doc, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+        const mainContainer = document.getElementById('mainContainer');
+        const goToRegister = document.getElementById('goToRegister');
+        const goToLogin = document.getElementById('goToLogin');
+
+        goToRegister.addEventListener('click', () => {
+            mainContainer.classList.add('register-mode');
+        });
+
+        goToLogin.addEventListener('click', () => {
+            mainContainer.classList.remove('register-mode');
+        });
+
+        const apiKey = ""; // Add your Gemini API key here
+
+        async function fetchGeminiData(prompt) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = { contents: [{ parts: [{ text: prompt }] }] };
+
+            let retries = 5;
+            let delay = 1000;
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+                    const data = await response.json();
+                    return data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
+                } catch (error) {
+                    if (i === retries - 1) throw error;
+                    await new Promise(res => setTimeout(res, delay));
+                    delay *= 2; 
+                }
+            }
+        }
+
+        const aiGenerateBtn = document.getElementById('ai-generate-btn');
+        const usernameInput = document.getElementById('register-username');
+
+        aiGenerateBtn.addEventListener('click', async () => {
+            const icon = aiGenerateBtn.querySelector('i');
+            icon.classList.replace('fa-wand-magic-sparkles', 'fa-circle-notch');
+            icon.classList.add('fa-spin-fast');
+            aiGenerateBtn.style.pointerEvents = 'none';
+
+            try {
+                const generatedUsername = await fetchGeminiData("Generate exactly 1 unique, short, professional single-word username for a user joining a smart note-taking app named VisiNote. Return ONLY the username in lowercase.");
+                if (generatedUsername) {
+                    usernameInput.value = generatedUsername;
+                    usernameInput.style.borderColor = 'var(--cyan-accent)';
+                    setTimeout(() => usernameInput.style.borderColor = 'var(--border-color)', 800);
+                }
+            } catch (e) {
+                usernameInput.placeholder = "Generation failed.";
+            } finally {
+                icon.classList.remove('fa-spin-fast', 'fa-circle-notch');
+                icon.classList.add('fa-wand-magic-sparkles');
+                aiGenerateBtn.style.pointerEvents = 'auto';
+            }
+        });
+
+        async function loadAIGreeting() {
+            const greetingElement = document.getElementById('ai-greeting');
+            try {
+                const greeting = await fetchGeminiData("Write a max 10 word inspiring welcoming sentence for a user logging into a smart workspace named VisiNote. Return ONLY the sentence.");
+                if (greeting) greetingElement.innerHTML = `"${greeting}"`;
+            } catch (e) {
+                greetingElement.innerHTML = "To keep connected with us please login.";
+            }
+        }
+        loadAIGreeting();
+
+        // Your Firebase Configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyDfdbA_iCryNL6JuOkZtSaPH3pEfza_rs0",
-            authDomain: "visinote-66f90.firebaseapp.com",
-            projectId: "visinote-66f90",
-            storageBucket: "visinote-66f90.firebasestorage.app",
-            messagingSenderId: "382835155909",
-            appId: "1:382835155909:web:f7f8f44b85f8cdc1dce1ac"
+            apiKey: "AIzaSyCucq4_5EvxozxTaEk52MTkVyWvv7RqwUg",
+            authDomain: "arcardia-6b034.firebaseapp.com",
+            projectId: "arcardia-6b034",
+            storageBucket: "arcardia-6b034.firebasestorage.app",
+            messagingSenderId: "394979413394",
+            appId: "1:394979413394:web:38cdcad9bc68b8795d854b"
         };
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const db = getFirestore(app);
 
-        onAuthStateChanged(auth, (user) => {
-            if (user) window.location.replace("dashboard.html");
-        });
+        // ==========================================
+        // FIREBASE REGISTRATION LOGIC
+        // ==========================================
+        document.getElementById('firebase-register').addEventListener('submit', async (e) => {
+            e.preventDefault(); 
 
-        let isLoginMode = true;
-        let isResetMode = false;
-
-        window.toggleAuthMode = () => {
-            isLoginMode = !isLoginMode;
-            isResetMode = false;
-            
-            document.getElementById('passwordFieldContainer').style.display = 'block';
-            document.getElementById('forgotPasswordContainer').style.display = isLoginMode ? 'flex' : 'none';
-            document.getElementById('socialDivider').style.display = 'flex';
-            document.getElementById('socialBtns').style.display = 'grid';
-
-            document.getElementById('authTitle').innerText = isLoginMode ? "Welcome Back" : "Create Account";
-            document.getElementById('authSubTitle').innerText = isLoginMode ? "Log in to manage your spatial workspace" : "Join the future of spatial productivity";
-            document.getElementById('mainAuthBtn').innerText = isLoginMode ? "Log In" : "Sign Up";
-            document.getElementById('toggleText').innerText = isLoginMode ? "Don't have an account?" : "Already have an account?";
-            document.getElementById('toggleModeBtn').innerText = isLoginMode ? "Sign Up" : "Log In";
-            
-            if (isLoginMode) {
-                document.getElementById('nameContainer').classList.remove('show-signup');
-                document.getElementById('confirmPasswordContainer').classList.remove('show-signup');
-            } else {
-                document.getElementById('nameContainer').classList.add('show-signup');
-                document.getElementById('confirmPasswordContainer').classList.add('show-signup');
-            }
-        };
-
-        window.handleForgotPassword = () => {
-            isResetMode = true;
-            document.getElementById('authTitle').innerText = "Reset Password";
-            document.getElementById('authSubTitle').innerText = "Enter your email to receive a reset link";
-            document.getElementById('mainAuthBtn').innerText = "Send Reset Link";
-            
-            document.getElementById('passwordFieldContainer').style.display = 'none';
-            document.getElementById('forgotPasswordContainer').style.display = 'none';
-            document.getElementById('socialDivider').style.display = 'none';
-            document.getElementById('socialBtns').style.display = 'none';
-            document.getElementById('nameContainer').classList.remove('show-signup');
-            document.getElementById('confirmPasswordContainer').classList.remove('show-signup');
-            
-            document.getElementById('toggleText').innerText = "Remember your password?";
-            document.getElementById('toggleModeBtn').innerText = "Back to Log In";
-        };
-
-        // Email & Password Auth
-        document.getElementById('mainAuthBtn').addEventListener('click', async () => {
-            const email = document.getElementById("emailInput").value.trim();
-            const password = document.getElementById("passwordInput").value;
-            const name = document.getElementById("nameInput").value.trim();
-            const errorBox = document.getElementById("authError");
-            errorBox.classList.add("hidden");
-
-            if (!email) return showErr("Please enter an email.");
+            // Grab data
+            const firstName = document.getElementById('register-firstname').value;
+            const lastName = document.getElementById('register-lastname').value;
+            const username = document.getElementById('register-username').value;
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
 
             try {
-                if (isResetMode) {
-                    await sendPasswordResetEmail(auth, email);
-                    alert("Reset link sent to your email!");
-                    window.toggleAuthMode();
-                } 
-                else if (isLoginMode) {
-                    if (!password) return showErr("Please enter a password.");
-                    await signInWithEmailAndPassword(auth, email, password);
-                } 
-                else {
-                    if (!name || !password) return showErr("Please fill all fields.");
-                    const cred = await createUserWithEmailAndPassword(auth, email, password);
-                    await updateProfile(cred.user, { displayName: name });
+                // 1. Create account in Firebase Auth
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // 2. Save extra details (Name & Username) to Firestore Database
+                await addDoc(collection(db, "users"), {
+                    uid: user.uid,
+                    firstName: firstName,
+                    lastName: lastName,
+                    username: username,
+                    email: email,
+                    createdAt: new Date()
+                });
+
+
+                setTimeout(() => {
+                    window.location.href = "main.html";
+                }, 800); 
+
+            } catch (error) {
+                alert("Registration Failed: " + error.message);
+            }
+        });
+
+        // ==========================================
+        // FIREBASE LOGIN LOGIC (USING USERNAME)
+        // ==========================================
+        document.getElementById('firebase-login').addEventListener('submit', async (e) => {
+            e.preventDefault(); 
+
+            const usernameInput = document.getElementById('login-username').value;
+            const passwordInput = document.getElementById('login-password').value;
+
+            try {
+                // 1. Search Firestore for the user's hidden Email using their Username
+                const usersRef = collection(db, "users");
+                const q = query(usersRef, where("username", "==", usernameInput));
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    alert("Username not found. Please register or check your spelling.");
+                    return;
                 }
+
+                let userEmail = "";
+                querySnapshot.forEach((doc) => {
+                    userEmail = doc.data().email;
+                });
+
+                // 2. Log them in using their extracted email and typed password
+                await signInWithEmailAndPassword(auth, userEmail, passwordInput);
+                setTimeout(() => {
+                    window.location.href = "main.html";
+                }, 800); 
+
             } catch (error) {
-                showErr(error.message);
+                alert("Login Failed: Incorrect password or connection issue.");
+                console.error(error);
             }
         });
 
-        // Google Login
-        document.getElementById('googleLoginBtn').addEventListener('click', async () => {
-            const provider = new GoogleAuthProvider();
+        // ==========================================
+        // PASSWORD RESET & SOCIAL LOGINS
+        // ==========================================
+        document.getElementById('forgot-password-link').addEventListener('click', async (e) => {
+            e.preventDefault();
+            const email = prompt("Enter registered email:");
+            if(email) {
+                try {
+                    await sendPasswordResetEmail(auth, email);
+                    alert("Reset link sent!");
+                } catch (err) { alert("Error: " + err.message); }
+            }
+        });
+
+        async function handleSocialLogin(provider) {
             try {
-                await signInWithPopup(auth, provider);
-            } catch (error) {
-                showErr(error.message);
-            }
-        });
-
-        // GitHub Login
-        document.getElementById('githubLoginBtn').addEventListener('click', async () => {
-            const provider = new GithubAuthProvider();
-            try {
-                await signInWithPopup(auth, provider);
-            } catch (error) {
-                showErr(error.message);
-            }
-        });
-
-        function showErr(msg) {
-            const eb = document.getElementById("authError");
-            // Clean up Firebase error messages to be more user-friendly
-            eb.innerText = msg.replace('Firebase: ', '');
-            eb.classList.remove("hidden");
+                const res = await signInWithPopup(auth, provider);
+                await setDoc(doc(db, "users", res.user.uid), {
+                    uid: res.user.uid, firstName: res.user.displayName?.split(' ')[0] || "User",
+                    lastName: res.user.displayName?.split(' ').slice(1).join(' ') || "",
+                    email: res.user.email, username: res.user.email.split('@')[0], createdAt: new Date()
+                }, { merge: true }); 
+                window.location.href = "main.html";
+            } catch (err) { alert("Error: " + err.message); }
         }
+
+        document.getElementById('google-login').addEventListener('click', () => handleSocialLogin(new GoogleAuthProvider()));
+        document.getElementById('github-login').addEventListener('click', () => handleSocialLogin(new GithubAuthProvider()));
     </script>
 </body>
 </html>
