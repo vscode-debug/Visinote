@@ -39,16 +39,10 @@
 
         /* Main Content */
         .vault-container { flex: 1; padding: 40px 8%; overflow-y: auto; z-index: 10; position: relative; }
-        .vault-header { margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 20px; }
+        .vault-header { margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end; }
         .vault-header h1 { font-size: 2.5rem; font-weight: 300; }
         .vault-header h1 span { font-weight: 700; color: var(--cyan-accent); }
         
-        /* NEW: Search Bar */
-        .search-box { position: relative; width: 100%; max-width: 350px; }
-        .search-box input { width: 100%; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px 15px 12px 45px; color: white; outline: none; transition: 0.3s; }
-        .search-box input:focus { border-color: var(--cyan-accent); box-shadow: 0 0 15px var(--cyan-glow); }
-        .search-box i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
-
         /* Grid */
         .notes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; padding-bottom: 50px; }
         
@@ -56,8 +50,8 @@
         .note-card { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 25px; box-shadow: var(--glass-shadow); display: flex; flex-direction: column; gap: 15px; transition: 0.3s; position: relative; overflow: hidden; }
         .note-card:hover { transform: translateY(-5px); border-color: rgba(2, 132, 199, 0.4); box-shadow: 0 10px 30px var(--cyan-glow); }
         
-        .note-title { font-size: 1.2rem; font-weight: 700; color: white; padding-right: 30px; /* Space for delete btn */ }
-        .note-desc { font-size: 0.95rem; color: #cbd5e1; flex: 1; line-height: 1.5; white-space: pre-wrap; }
+        .note-title { font-size: 1.2rem; font-weight: 700; color: white; }
+        .note-desc { font-size: 0.95rem; color: #cbd5e1; flex: 1; line-height: 1.5; }
         
         .note-meta { display: flex; flex-direction: column; gap: 5px; margin-top: 10px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.85rem; color: var(--text-muted); }
         .meta-item { display: flex; align-items: center; gap: 8px; }
@@ -66,19 +60,9 @@
         .delete-btn { position: absolute; top: 20px; right: 20px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); width: 32px; height: 32px; border-radius: 8px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; }
         .delete-btn:hover { background: #ef4444; color: white; }
 
-        /* Empty State */
-        .empty-state { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; text-align: center; color: var(--text-muted); }
-        .empty-state i { font-size: 4rem; color: rgba(2, 132, 199, 0.3); margin-bottom: 15px; }
-
         /* Scrollbar */
         .vault-container::-webkit-scrollbar { width: 8px; }
         .vault-container::-webkit-scrollbar-thumb { background: rgba(2, 132, 199, 0.5); border-radius: 10px; }
-
-        @media (max-width: 768px) {
-            .header { padding: 15px 20px; }
-            .vault-header { flex-direction: column; align-items: flex-start; }
-            .search-box { max-width: 100%; }
-        }
     </style>
 </head>
 <body>
@@ -89,20 +73,15 @@
     <header class="header">
         <a href="main.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
         <div class="title"><i class="fa-solid fa-vault text-cyan-accent mr-2"></i> Spatial <span>Vault</span></div>
-        <div style="width: 100px;" class="hidden md:block"></div> 
-    </header>
+        <div style="width: 100px;"></div> </header>
 
     <div class="vault-container">
         <div class="vault-header">
             <div>
                 <h1>Your <span>Archive</span></h1>
                 <p style="color: var(--text-muted);">Manage and review all your anchored spatial notes.</p>
-                <div style="color: var(--cyan-accent); font-weight: 600; margin-top: 5px;" id="total-count">Loading Notes...</div>
             </div>
-            <div class="search-box">
-                <i class="fa-solid fa-search"></i>
-                <input type="text" id="search-input" placeholder="Search title or content...">
-            </div>
+            <div style="color: var(--cyan-accent); font-weight: 600;" id="total-count">Loading...</div>
         </div>
 
         <div class="notes-grid" id="notes-grid">
@@ -129,112 +108,73 @@
         
         const grid = document.getElementById('notes-grid');
         const countLabel = document.getElementById('total-count');
-        const searchInput = document.getElementById('search-input');
-        
-        let allNotes = []; // Store locally for fast searching
-
-        // Helper function for nice date formatting
-        function formatDate(timestamp) {
-            if (!timestamp) return 'Unknown Date';
-            const date = timestamp.toDate();
-            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + 
-                   " • " + 
-                   date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-        }
-
-        function renderNotes(notesToRender) {
-            grid.innerHTML = '';
-
-            if(notesToRender.length === 0) {
-                grid.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fa-solid fa-ghost"></i>
-                        <h3 style="font-size: 1.2rem; color: white; margin-bottom: 5px;">No notes found</h3>
-                        <p>Try adjusting your search or add new notes in AR Mode.</p>
-                    </div>`;
-                return;
-            }
-
-            notesToRender.forEach((note, index) => {
-                const dateStr = formatDate(note.timestamp);
-                const x = note.x ? note.x.toFixed(2) : "0.00";
-                const y = note.y ? note.y.toFixed(2) : "0.00";
-                const z = note.z ? note.z.toFixed(2) : "0.00";
-
-                const card = document.createElement('div');
-                card.className = 'note-card';
-                card.innerHTML = `
-                    <button class="delete-btn" data-id="${note.id}" title="Delete Note"><i class="fa-solid fa-trash"></i></button>
-                    <div class="note-title">${note.title || 'Untitled'}</div>
-                    <div class="note-desc">${note.content || 'No description provided.'}</div>
-                    <div class="note-meta">
-                        <div class="meta-item"><i class="fa-solid fa-clock"></i> ${dateStr}</div>
-                        <div class="meta-item"><i class="fa-solid fa-location-crosshairs"></i> Pos: [X: ${x}, Y: ${y}, Z: ${z}]</div>
-                    </div>
-                `;
-                grid.appendChild(card);
-
-                // Animate entry (faster stagger for better search feel)
-                anime({
-                    targets: card,
-                    translateY: [15, 0],
-                    opacity: [0, 1],
-                    delay: index * 50,
-                    duration: 500,
-                    easing: 'easeOutQuad'
-                });
-            });
-
-            // Attach delete logic
-            document.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    if(confirm("Are you sure you want to permanently delete this note?")) {
-                        const id = e.currentTarget.getAttribute('data-id');
-                        try {
-                            await deleteDoc(doc(db, "notes", id));
-                            // Remove from local array and re-render to keep search active
-                            allNotes = allNotes.filter(n => n.id !== id);
-                            countLabel.innerText = `${allNotes.length} Total Notes`;
-                            // Trigger search again to update view
-                            searchInput.dispatchEvent(new Event('input'));
-                        } catch (error) {
-                            alert("Failed to delete note.");
-                        }
-                    }
-                });
-            });
-        }
 
         async function fetchVaultNotes(uid) {
             try {
                 const q = query(collection(db, "notes"), where("uid", "==", uid));
                 const snap = await getDocs(q);
                 
-                allNotes = [];
-                snap.forEach(d => allNotes.push({ id: d.id, ...d.data() }));
+                let notes = [];
+                snap.forEach(d => notes.push({ id: d.id, ...d.data() }));
                 
                 // Sort by newest first
-                allNotes.sort((a, b) => (b.timestamp?.toMillis() || 0) - (a.timestamp?.toMillis() || 0));
+                notes.sort((a, b) => (b.timestamp?.toMillis() || 0) - (a.timestamp?.toMillis() || 0));
 
-                countLabel.innerText = `${allNotes.length} Total Notes`;
-                renderNotes(allNotes);
+                countLabel.innerText = `${notes.length} Total Notes`;
+                grid.innerHTML = '';
+
+                if(notes.length === 0) {
+                    grid.innerHTML = `<div style="color:var(--text-muted);">Your vault is empty. Try adding notes in AR Mode!</div>`;
+                    return;
+                }
+
+                notes.forEach((note, index) => {
+                    const dateStr = note.timestamp ? note.timestamp.toDate().toLocaleString() : 'Unknown Date';
+                    const x = note.x ? note.x.toFixed(2) : "0.00";
+                    const y = note.y ? note.y.toFixed(2) : "0.00";
+                    const z = note.z ? note.z.toFixed(2) : "0.00";
+
+                    const card = document.createElement('div');
+                    card.className = 'note-card';
+                    card.innerHTML = `
+                        <button class="delete-btn" data-id="${note.id}" title="Delete Note"><i class="fa-solid fa-trash"></i></button>
+                        <div class="note-title">${note.title || 'Untitled'}</div>
+                        <div class="note-desc">${note.content || 'No description provided.'}</div>
+                        <div class="note-meta">
+                            <div class="meta-item"><i class="fa-solid fa-clock"></i> ${dateStr}</div>
+                            <div class="meta-item"><i class="fa-solid fa-location-crosshairs"></i> Pos: [X: ${x}, Y: ${y}, Z: ${z}]</div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+
+                    // Animate entry
+                    anime({
+                        targets: card,
+                        translateY: [20, 0],
+                        opacity: [0, 1],
+                        delay: index * 100,
+                        duration: 800,
+                        easing: 'easeOutQuart'
+                    });
+                });
+
+                // Attach delete logic
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        if(confirm("Are you sure you want to permanently delete this note?")) {
+                            const id = e.currentTarget.getAttribute('data-id');
+                            await deleteDoc(doc(db, "notes", id));
+                            e.currentTarget.parentElement.style.display = 'none'; // hide immediately
+                            fetchVaultNotes(uid); // refresh count
+                        }
+                    });
+                });
 
             } catch (err) {
                 console.error(err);
-                grid.innerHTML = `<div class="empty-state" style="color:#ef4444;"><i class="fa-solid fa-triangle-exclamation" style="color:#ef4444;"></i> Error loading vault data.</div>`;
+                grid.innerHTML = `<div style="color:#ef4444;">Error loading vault data.</div>`;
             }
         }
-
-        // Live Search Filtering
-        searchInput.addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            const filtered = allNotes.filter(note => {
-                const t = (note.title || "").toLowerCase();
-                const c = (note.content || "").toLowerCase();
-                return t.includes(term) || c.includes(term);
-            });
-            renderNotes(filtered);
-        });
 
         onAuthStateChanged(auth, (user) => {
             if (user) fetchVaultNotes(user.uid);
