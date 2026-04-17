@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VisiNote | Dashboard</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
+    <style>
+        :root {
+            --bg-main: #112d5c;       
+            --glass-bg: rgba(255, 255, 255, 0.05);  
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            --cyan-accent: #0284c7;      
+            --cyan-glow: rgba(2, 132, 199, 0.4); 
+            --text-main: #f8fafc;        
+            --text-muted: #94a3b8;      
+        }
+
+        * {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            text-decoration: none;
+            list-style: none;
+        }
+
+        body {
+            height: 100vh;
+            background: var(--bg-main);
+            color: var(--text-main);
+            position: relative;
+            overflow: hidden;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        /* Animated Background Blobs */
+        .bg-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(90px);
+            opacity: 0.6;
+            z-index: 0;
+            pointer-events: none;
+            animation: drift alternate infinite ease-in-out;
+        }
+        .blob-1 { width: 600px; height: 600px; background: #0284c7; top: -10%; left: -10%; animation-duration: 25s; }
+        .blob-2 { width: 700px; height: 700px; background: #8b5cf6; bottom: -20%; right: -10%; animation-duration: 28s; animation-delay: -5s; }
+
+        @keyframes drift {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(50px, -50px) scale(1.1); }
+            66% { transform: translate(-40px, 60px) scale(0.9); }
+            100% { transform: translate(20px, 20px) scale(1.05); }
+        }
+
+        .dashboard-wrapper { position: relative; z-index: 10; width: 100%; height: 100%; display: flex; flex-direction: column; }
+
+        /* Top Navbar */
+        .navbar {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 50px; background: rgba(17, 45, 92, 0.3);
+            backdrop-filter: blur(15px); border-bottom: 1px solid var(--glass-border);
+        }
+        .brand-text { font-size: 1.8rem; font-weight: 800; letter-spacing: -0.5px; color: #ffffff; }
+        .brand-text span { color: #38bdf8; }
+        .nav-right { display: flex; align-items: center; gap: 25px; }
+
+        .search-container { position: relative; display: flex; align-items: center; }
+        .search-input {
+            width: 40px; height: 40px; border-radius: 20px; border: 1px solid transparent;
+            background: transparent; padding: 0 15px 0 40px; color: var(--text-main); font-size: 14px;
+            transition: all 0.4s ease; cursor: pointer;
+        }
+        .search-input:focus, .search-container:hover .search-input {
+            width: 250px; background: var(--glass-bg); border: 1px solid var(--glass-border); cursor: text;
+        }
+        .search-icon { position: absolute; left: 12px; color: var(--text-muted); pointer-events: none; transition: color 0.3s; }
+        .search-input:focus ~ .search-icon, .search-container:hover .search-icon { color: var(--cyan-accent); }
+
+        .profile-container { position: relative; cursor: pointer; padding: 5px; opacity: 0.7; transition: 0.3s; }
+        .profile-container:hover { opacity: 1; transform: scale(1.1); }
+        .profile-container i { font-size: 1.5rem; color: var(--text-main); }
+
+        /* Main Content */
+        .main-content {
+            flex: 1; padding: 50px 8%; display: flex; flex-direction: column; gap: 40px;
+            overflow-y: auto; padding-bottom: 140px; 
+        }
+        .greeting-section .subtitle { font-size: 14px; color: var(--cyan-accent); text-transform: uppercase; letter-spacing: 2px; font-weight: 600; margin-bottom: 10px; }
+        .greeting-section h1 { font-size: 3rem; font-weight: 300; margin-bottom: 5px; }
+        .greeting-section h1 span { font-weight: 700; }
+        .greeting-section p { font-size: 1.1rem; color: var(--text-muted); font-style: italic; }
+
+        .widgets-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .glass-card {
+            background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border);
+            border-radius: 24px; padding: 30px; box-shadow: var(--glass-shadow);
+            position: relative; display: flex; flex-direction: column;
+        }
+        .card-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--glass-border); padding-bottom: 15px; }
+
+        .recent-notes-list { flex: 1; display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; max-height: 220px; overflow-y: auto; padding-right: 5px; }
+        .recent-notes-list::-webkit-scrollbar { width: 6px; }
+        .recent-notes-list::-webkit-scrollbar-thumb { background: rgba(2, 132, 199, 0.5); border-radius: 10px; }
+        
+        .note-item { padding: 15px; background: rgba(255, 255, 255, 0.03); border-radius: 12px; border: 1px solid transparent; transition: all 0.3s; cursor: pointer; }
+        .note-item:hover { border-color: var(--cyan-accent); background: rgba(2, 132, 199, 0.1); transform: translateX(5px); }
+
+        .add-note-btn {
+            align-self: flex-start; display: flex; align-items: center; gap: 10px; background: var(--cyan-accent);
+            color: white; padding: 12px 20px; border-radius: 50px; border: none; cursor: pointer; font-weight: 600; transition: all 0.3s; box-shadow: 0 4px 15px var(--cyan-glow);
+        }
+        .add-note-btn:hover { transform: translateY(-3px); background: #38bdf8; box-shadow: 0 6px 20px var(--cyan-glow); }
+
+        .total-stats { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .total-number { font-size: 5.5rem; font-weight: 800; background: linear-gradient(135deg, #fff, #38bdf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; }
+        .total-label { margin-top: 10px; font-size: 1.1rem; color: var(--text-muted); font-weight: 500; }
+
+        /* Bottom Dock */
+        .bottom-dock {
+            position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
+            background: rgba(10, 25, 50, 0.75); backdrop-filter: blur(25px); border: 1px solid var(--glass-border);
+            border-radius: 30px; padding: 12px 25px; display: flex; gap: 20px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5); z-index: 100;
+        }
+        .dock-item {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: var(--text-muted); cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); gap: 8px; min-width: 60px;
+        }
+        .dock-item i { font-size: 1.4rem; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 14px; transition: all 0.3s; }
+        .dock-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; transition: color 0.3s; text-align: center;}
+        .dock-item:hover i { color: white; background: var(--cyan-accent); transform: translateY(-8px) scale(1.1); box-shadow: 0 10px 20px var(--cyan-glow); }
+        .dock-item:hover .dock-label { color: white; }
+        .dock-item.exit:hover i { background: #ef4444; box-shadow: 0 10px 20px rgba(239, 68, 68, 0.4); }
+
+        /* Add Note Modal */
+        #globalNoteModal { display: none; position: fixed; inset: 0; z-index: 9999; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); backdrop-filter: blur(12px); padding: 20px; }
+        .modal-content { background: #0f0f14; width: 100%; max-width: 450px; padding: 35px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 25px 50px rgba(0,0,0,0.5); position: relative; }
+        .modal-close { position: absolute; top: 20px; right: 25px; color: var(--text-muted); cursor: pointer; font-size: 1.2rem; transition: 0.3s; }
+        .modal-close:hover { color: white; transform: scale(1.1); }
+        .modal-input, .modal-textarea { width: 100%; padding: 15px; margin-bottom: 15px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid transparent; color: white; outline: none; transition: 0.3s; font-family: 'Plus Jakarta Sans', sans-serif; }
+        .modal-input:focus, .modal-textarea:focus { border-color: var(--cyan-accent); }
+        .modal-textarea { resize: none; height: 110px; }
+        .modal-btn { width: 100%; padding: 15px; background: var(--cyan-accent); color: white; font-weight: 700; font-size: 1.05rem; border-radius: 12px; border: none; cursor: pointer; transition: 0.3s; }
+        .modal-btn:hover { background: #38bdf8; box-shadow: 0 4px 15px var(--cyan-glow); }
+
+        @media (max-width: 900px) {
+            .widgets-grid { grid-template-columns: 1fr; }
+            .bottom-dock { width: 95%; gap: 8px; padding: 12px 10px; }
+            .dock-item { min-width: 50px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-blob blob-1"></div>
+    <div class="bg-blob blob-2"></div>
+
+    <div class="dashboard-wrapper">
+        
+        <nav class="navbar">
+            <div class="brand-text">Visi<span>Note</span></div>
+            <div class="nav-right">
+                <div class="search-container">
+                    <input type="text" class="search-input" placeholder="Search notes...">
+                    <i class="fa-solid fa-search search-icon"></i>
+                </div>
+                <div class="profile-container" title="Profile">
+                    <i class="fa-solid fa-circle-user"></i>
+                </div>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            
+            <section class="greeting-section">
+                <div class="subtitle">Personal Workspace</div>
+                <h1>Hey, <span id="display-name">User</span></h1>
+                <p>Ready to save your memory?</p>
+            </section>
+
+            <section class="widgets-grid">
+                
+                <div class="glass-card">
+                    <div class="card-title">
+                        <i class="fa-regular fa-clock" style="color: var(--cyan-accent);"></i> Recent Notes
+                    </div>
+                    
+                    <div class="recent-notes-list" id="recent-notes-container">
+                        <div style="text-align: center; color: var(--text-muted); font-size: 14px; margin-top: 10px;">
+                            Loading notes...
+                        </div>
+                    </div>
+
+                    <button class="add-note-btn" onclick="openGlobalModal()">
+                        <i class="fa-solid fa-plus"></i> Add Note
+                    </button>
+                </div>
+
+                <div class="glass-card">
+                    <div class="card-title">
+                        <i class="fa-solid fa-chart-simple" style="color: var(--cyan-accent);"></i> Workspace Stats
+                    </div>
+                    
+                    <div class="total-stats">
+                        <div class="total-number" id="total-notes-count">0</div>
+                        <div class="total-label">Total Notes Count</div>
+                    </div>
+                </div>
+
+            </section>
+        </main>
+
+        <div class="bottom-dock">
+            <div class="dock-item" onclick="window.location.href='main.html'">
+                <i class="fa-solid fa-house"></i>
+                <span class="dock-label">Home</span>
+            </div>
+            <div class="dock-item" onclick="window.location.href='ar-camera.html'">
+                <i class="fa-solid fa-vr-cardboard"></i>
+                <span class="dock-label">AR Mode</span>
+            </div>
+            <div class="dock-item" onclick="window.location.href='ar-camera.html?mode=scan'">
+                <i class="fa-solid fa-qrcode"></i>
+                <span class="dock-label">Scan</span>
+            </div>
+            <div class="dock-item" onclick="window.location.href='vault.html'">
+                <i class="fa-solid fa-vault"></i>
+                <span class="dock-label">Vault</span>
+            </div>
+            <div class="dock-item" onclick="generateShareLink()">
+                <i class="fa-solid fa-users"></i>
+                <span class="dock-label">Give<br>Access</span>
+            </div>
+            <div class="dock-item exit" id="logout-btn">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                <span class="dock-label">Exit</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="globalNoteModal">
+        <div class="modal-content">
+            <i class="fa-solid fa-xmark modal-close" onclick="closeGlobalModal()"></i>
+            <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 20px; color: white;">
+                <i class="fa-solid fa-expand" style="color: var(--cyan-accent); margin-right: 8px;"></i> Initialize Anchor
+            </h2>
+            <input type="text" id="globalNoteTitle" class="modal-input" placeholder="Title..." />
+            <textarea id="globalNoteContent" class="modal-textarea" placeholder="Description..."></textarea>
+            <button id="globalSaveNoteBtn" class="modal-btn">Save to Workspace</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            anime({
+                targets: ['.navbar', '.greeting-section', '.glass-card', '.bottom-dock'],
+                translateY: [20, 0],
+                opacity: [0, 1],
+                duration: 1000,
+                delay: anime.stagger(150),
+                easing: 'easeOutCubic'
+            });
+        });
+
+        window.openGlobalModal = () => document.getElementById('globalNoteModal').style.display = 'flex';
+        window.closeGlobalModal = () => {
+            document.getElementById('globalNoteModal').style.display = 'none';
+            document.getElementById('globalNoteTitle').value = "";
+            document.getElementById('globalNoteContent').value = "";
+        };
+
+        // Custom Link Generator for "Give Access"
+        window.generateShareLink = () => {
+            if(!window.currentUserUid) {
+                return alert("Please log in to share your workspace.");
+            }
+            // Creates a shareable URL containing the user's ID
+            const link = window.location.origin + "/shared.html?user=" + window.currentUserUid;
+            
+            navigator.clipboard.writeText(link).then(() => {
+                alert("Share link copied to clipboard!\n\n" + link);
+            }).catch(() => {
+                alert("Your share link is: \n" + link);
+            });
+        };
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, collection, query, where, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCucq4_5EvxozxTaEk52MTkVyWvv7RqwUg",
+            authDomain: "arcardia-6b034.firebaseapp.com",
+            projectId: "arcardia-6b034",
+            storageBucket: "arcardia-6b034.firebasestorage.app",
+            messagingSenderId: "394979413394",
+            appId: "1:394979413394:web:38cdcad9bc68b8795d854b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        // Attached to window so the Share Link function can access it
+        window.currentUserUid = null;
+
+        const displayNameEl = document.getElementById('display-name');
+        const logoutBtn = document.getElementById('logout-btn');
+        const totalNotesEl = document.getElementById('total-notes-count');
+        const recentNotesContainer = document.getElementById('recent-notes-container');
+        const saveNoteBtn = document.getElementById('globalSaveNoteBtn');
+
+        async function loadDashboardNotes() {
+            if (!window.currentUserUid) return;
+
+            try {
+                const q = query(collection(db, "notes"), where("uid", "==", window.currentUserUid));
+                const querySnapshot = await getDocs(q);
+                
+                totalNotesEl.innerText = querySnapshot.size;
+
+                let notesData = [];
+                querySnapshot.forEach((doc) => {
+                    notesData.push({ id: doc.id, ...doc.data() });
+                });
+                
+                notesData.sort((a, b) => {
+                    const timeA = a.timestamp?.toMillis() || 0;
+                    const timeB = b.timestamp?.toMillis() || 0;
+                    return timeB - timeA;
+                });
+
+                recentNotesContainer.innerHTML = '';
+                
+                if(notesData.length === 0) {
+                    recentNotesContainer.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 14px; margin-top: 10px;">No notes yet. Add one!</div>`;
+                    return;
+                }
+
+                const topNotes = notesData.slice(0, 5);
+                topNotes.forEach(note => {
+                    const noteEl = document.createElement('div');
+                    noteEl.className = 'note-item';
+                    
+                    const dateObj = note.timestamp ? note.timestamp.toDate() : new Date();
+                    const dateStr = dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+
+                    noteEl.innerHTML = `
+                        <h4 style="font-weight: 600; margin-bottom: 2px; color: white;">${note.title || 'Untitled'}</h4>
+                        <span style="font-size: 11px; color: var(--text-muted);">Added ${dateStr}</span>
+                    `;
+                    recentNotesContainer.appendChild(noteEl);
+                });
+
+            } catch(err) {
+                console.error("Error loading notes:", err);
+                recentNotesContainer.innerHTML = `<div style="color: #ef4444; font-size: 13px; text-align:center;">Error loading notes.</div>`;
+            }
+        }
+
+        // Fixed Modal Save Logic
+        saveNoteBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const titleInput = document.getElementById("globalNoteTitle");
+            const contentInput = document.getElementById("globalNoteContent");
+            
+            const title = titleInput.value.trim();
+            const content = contentInput.value.trim();
+
+            // FIXED: Separate auth check from text check to avoid confusing errors
+            if (!window.currentUserUid) {
+                return alert("Error: User session not found. Please log in again.");
+            }
+            if (!title || !content) {
+                return alert("Please fill out the title and description!");
+            }
+
+            saveNoteBtn.innerText = "Processing...";
+            saveNoteBtn.style.opacity = "0.7";
+
+            try {
+                await addDoc(collection(db, "notes"), {
+                    uid: window.currentUserUid, 
+                    title: title, 
+                    content: content, 
+                    timestamp: serverTimestamp(), 
+                    x: 0, y: 1.6, z: -2 // Default coordinates for dashboard entry
+                });
+                
+                window.closeGlobalModal();
+                saveNoteBtn.innerText = "Save to Workspace";
+                saveNoteBtn.style.opacity = "1";
+                
+                loadDashboardNotes();
+
+            } catch (err) {
+                console.error("Error adding note:", err);
+                alert("Failed to save note.");
+                saveNoteBtn.innerText = "Save to Workspace";
+                saveNoteBtn.style.opacity = "1";
+            }
+        });
+
+        // Auth State Listener
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                window.currentUserUid = user.uid;
+                
+                try {
+                    const userSnap = await getDoc(doc(db, "users", user.uid));
+                    if (userSnap.exists()) {
+                        const userData = userSnap.data();
+                        displayNameEl.innerText = userData.firstName || userData.username || "User";
+                    } else {
+                        displayNameEl.innerText = user.displayName || user.email.split('@')[0];
+                    }
+                } catch(err) {
+                    displayNameEl.innerText = "User";
+                }
+
+                loadDashboardNotes();
+
+            } else {
+                console.log("No user signed in.");
+                // Uncomment below if you want to automatically boot out unauthenticated users
+                // window.location.href = "loginPage.html"; 
+            }
+        });
+
+        // Fixed Exit Routing
+        logoutBtn.addEventListener('click', () => {
+            signOut(auth).then(() => {
+                // Now reliably goes back to index.html
+                window.location.href = "index.html"; 
+            }).catch((error) => {
+                alert("Error logging out: " + error.message);
+            });
+        });
+    </script>
+</body>
+</html>
