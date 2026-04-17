@@ -2,29 +2,38 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>AR Camera | VisiNote</title>
 
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-    <script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script>
     
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
     
+    <script>
+        AFRAME.registerComponent('billboard', {
+            tick: function () {
+                const camera = this.el.sceneEl.camera;
+                if (camera) {
+                    this.el.object3D.lookAt(camera.position);
+                }
+            }
+        });
+    </script>
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
         html, body { background: #000; width: 100%; height: 100%; overflow: hidden; position: fixed; }
         
-        /* Clean up AR.js injected elements */
+        /* Clean up AR.js video handling */
         .arjs-loader { display: none !important; }
-        #ar-container video { position: absolute !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important; object-fit: cover !important; z-index: 1 !important; }
-        .a-canvas { position: absolute !important; z-index: 2 !important; }
+        #arjs-video { position: absolute !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; object-fit: cover !important; z-index: -1 !important; }
         
         /* UI Overlay */
         .ui-layer { position: absolute; inset: 0; z-index: 100; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; }
         
-        /* Top Header */
+        /* Header */
         .ar-header { background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); padding: 15px 20px; display: flex; align-items: center; pointer-events: auto; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .back-btn { background: rgba(255,255,255,0.1); color: white; border: none; width: 40px; height: 40px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin-right: 15px; }
         .ar-title { color: white; font-weight: 700; font-size: 1.2rem; }
@@ -40,7 +49,6 @@
         .action-btn { background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); color: white; width: 60px; height: 60px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; cursor: pointer; transition: 0.2s; }
         .action-btn i { font-size: 1.2rem; }
         .action-btn span { font-size: 0.6rem; font-weight: 700; text-transform: uppercase; }
-        .action-btn.active { border-color: #22d3ee; color: #22d3ee; background: rgba(34, 211, 238, 0.1); }
         .action-btn.delete-active { border-color: #ef4444; color: #ef4444; background: rgba(239, 68, 68, 0.1); }
 
         .add-btn { background: #0284c7; color: white; width: 80px; height: 80px; border-radius: 40px; border: 2px solid rgba(34, 211, 238, 0.5); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 0 30px rgba(2, 132, 199, 0.6); transition: 0.2s; }
@@ -57,22 +65,26 @@
         .modal-textarea:focus { border-color: #0284c7; }
         .save-btn { width: 100%; padding: 15px; background: #0284c7; color: white; font-weight: 700; border-radius: 12px; border: none; cursor: pointer; font-size: 1.1rem; }
         
+        /* Dedicated Tap Zone for Drop Mechanics */
+        #tapZone { display: none; position: absolute; inset: 0; z-index: 90; cursor: crosshair; pointer-events: auto; }
+        
         /* Crosshair */
-        .crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.5); border-radius: 50%; pointer-events: none; z-index: 99; display: flex; align-items: center; justify-content: center; }
+        .crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 24px; height: 24px; border: 2px solid rgba(255,255,255,0.5); border-radius: 50%; pointer-events: none; z-index: 99; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
         .crosshair::after { content: ''; width: 4px; height: 4px; background: #22d3ee; border-radius: 50%; }
     </style>
 </head>
 
 <body>
 
-    <div id="ar-container">
-        <a-scene embedded vr-mode-ui="enabled: false" arjs="sourceType: webcam; debugUIEnabled: false; videoTexture: true;">
-            <a-entity id="notesGroup"></a-entity>
-            <a-camera id="arCamera" position="0 1.6 0" look-controls="enabled: true; magicWindowTrackingEnabled: true">
-                <a-cursor visible="false" raycaster="objects: .raycastable-note"></a-cursor>
-            </a-camera>
-        </a-scene>
-    </div>
+    <div id="tapZone" onclick="handlePlacementTap()"></div>
+
+    <a-scene embedded vr-mode-ui="enabled: false" arjs="sourceType: webcam; debugUIEnabled: false; videoTexture: true;">
+        <a-entity id="notesGroup"></a-entity>
+        
+        <a-camera id="arCamera" position="0 1.6 0" look-controls="enabled: true; magicWindowTrackingEnabled: true">
+            <a-cursor color="#ffffff" opacity="0.5" scale="0.8 0.8 0.8" raycaster="objects: .raycastable-note"></a-cursor>
+        </a-camera>
+    </a-scene>
 
     <div class="ui-layer">
         <header class="ar-header">
@@ -82,7 +94,7 @@
 
         <div class="status-badge" id="statusBadge">
             <div class="pulse-dot"></div>
-            <span id="statusText">SCANNING ENVIRONMENT</span>
+            <span id="statusText">SPATIAL TRACKING ACTIVE</span>
         </div>
 
         <div class="crosshair" id="crosshair"></div>
@@ -95,17 +107,13 @@
             <button class="add-btn" onclick="openARModal()">
                 <i class="fa-solid fa-plus"></i><span>Add Note</span>
             </button>
-            
-            <button class="action-btn" id="editBtn" onclick="toggleEditMode()">
-                <i class="fa-solid fa-pen-to-square"></i><span>Edit</span>
-            </button>
         </div>
     </div>
 
     <div id="arModal">
         <div class="modal-box">
             <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-                <h2 style="color: white; font-size: 1.5rem; font-weight: 700;"><i class="fa-solid fa-expand" style="color: #22d3ee;"></i> Anchor Note</h2>
+                <h2 style="color: white; font-size: 1.5rem; font-weight: 700;"><i class="fa-solid fa-expand" style="color: #22d3ee; margin-right: 8px;"></i> Anchor Note</h2>
                 <button onclick="closeARModal()" style="background: transparent; border: none; color: #888; font-size: 1.5rem; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <input type="text" id="arNoteTitle" class="modal-input" placeholder="Title..." />
@@ -119,6 +127,7 @@
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, collection, query, where, getDocs, deleteDoc, doc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+        // Your Firebase config
         const firebaseConfig = {
             apiKey: "AIzaSyCucq4_5EvxozxTaEk52MTkVyWvv7RqwUg",
             authDomain: "arcardia-6b034.firebaseapp.com",
@@ -132,30 +141,18 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // State variables
         let currentUserUid = null;
         let isPlacementMode = false;
         let pendingNoteData = null;
         let isDeleteMode = false;
-        let isEditMode = false;
 
         const notesGroup = document.getElementById('notesGroup');
         const statusText = document.getElementById('statusText');
         const statusBadge = document.getElementById('statusBadge');
         const crosshair = document.getElementById('crosshair');
+        const tapZone = document.getElementById('tapZone');
 
-        // Force video to fit screen (Fix for AR.js quirk)
-        window.addEventListener('load', () => {
-            setInterval(() => {
-                const arVideo = document.querySelector('video');
-                if (arVideo && !arVideo.classList.contains('fixed')) { 
-                    arVideo.classList.add('fixed');
-                    document.getElementById('ar-container').appendChild(arVideo);
-                }
-            }, 1000);
-        });
-
-        // Fetch and render notes from DB
+        // Fetch and render notes from Database
         window.loadARNotes = async () => {
             if (!currentUserUid) return;
             try {
@@ -167,49 +164,47 @@
                     const data = docSnap.data();
                     const el = document.createElement('a-entity');
                     
-                    // Set position
-                    el.setAttribute('position', `${data.x} ${data.y} ${data.z}`);
-                    el.setAttribute('look-at', '#arCamera');
-                    el.classList.add('raycastable-note');
+                    // Safety check coordinates
+                    const posX = typeof data.x === 'number' ? data.x : 0;
+                    const posY = typeof data.y === 'number' ? data.y : 1.6;
+                    const posZ = typeof data.z === 'number' ? data.z : -2;
+
+                    el.setAttribute('position', `${posX} ${posY} ${posZ}`);
+                    el.setAttribute('billboard', ''); // Custom native script
+                    el.classList.add('raycastable-note'); // Allows cursor to click it
                     
-                    // Design the AR Note card
+                    // Design the AR Note card (Scaled safely)
                     let html = `
-                        <a-plane color="#0f0f14" width="1.8" height="1.1" opacity="0.9" material="shader: flat;"></a-plane>
-                        <a-plane color="#0284c7" width="1.8" height="0.05" position="0 0.52 0.01"></a-plane>
-                        <a-text value="${data.title}" align="center" position="0 0.25 0.02" color="#22d3ee" width="4" font="exo2bold"></a-text>
-                        <a-text value="${data.content}" align="center" position="0 -0.1 0.02" color="#ffffff" width="3" wrap-count="30"></a-text>
+                        <a-plane color="#0f0f14" width="1.4" height="0.8" opacity="0.9"></a-plane>
+                        <a-plane color="#0284c7" width="1.4" height="0.05" position="0 0.4 0.01"></a-plane>
+                        <a-text value="${data.title || 'Note'}" align="center" position="0 0.2 0.02" color="#22d3ee" width="3" wrap-count="20"></a-text>
+                        <a-text value="${data.content || ''}" align="center" position="0 -0.1 0.02" color="#ffffff" width="2.5" wrap-count="25"></a-text>
                     `;
                     
-                    // Add UI badges based on mode
-                    if (isDeleteMode) html += `<a-circle color="#ef4444" radius="0.15" position="0.8 0.45 0.03"><a-text value="X" align="center" color="white"></a-text></a-circle>`;
-                    else if (isEditMode) html += `<a-circle color="#a855f7" radius="0.15" position="0.8 0.45 0.03"><a-text value="E" align="center" color="white"></a-text></a-circle>`;
+                    if (isDeleteMode) {
+                        html += `<a-circle color="#ef4444" radius="0.12" position="0.6 0.35 0.03"><a-text value="X" align="center" color="white"></a-text></a-circle>`;
+                    }
 
                     el.innerHTML = html;
 
-                    // Interaction logic
+                    // Interaction logic (Deleting)
                     el.addEventListener('click', async (e) => {
-                        e.stopPropagation();
                         if (isDeleteMode) {
                             if (confirm(`Delete note: "${data.title}"?`)) {
                                 await deleteDoc(doc(db, "notes", docSnap.id));
                                 window.loadARNotes();
                             }
-                        } else if (isEditMode) {
-                            alert(`Editing is currently view-only. You selected: ${data.title}`);
                         }
                     });
                     
                     notesGroup.appendChild(el);
                 });
-            } catch (err) { console.error(err); }
+            } catch (err) { console.error("Load Notes Error: ", err); }
         };
 
         // --- UI Modal Functions ---
-        window.openARModal = () => {
-            document.getElementById('arModal').style.display = 'flex';
-        };
-
-        window.closeARModal = () => {
+        window.openARModal = () => { document.getElementById('arModal').style.display = 'flex'; };
+        window.closeARModal = () => { 
             document.getElementById('arModal').style.display = 'none';
             document.getElementById('arNoteTitle').value = "";
             document.getElementById('arNoteContent').value = "";
@@ -219,55 +214,57 @@
             const title = document.getElementById("arNoteTitle").value.trim();
             const content = document.getElementById("arNoteContent").value.trim();
             
-            if (!currentUserUid || !title || !content) return alert("Fill in details!");
+            if (!currentUserUid) return alert("Error: User not found.");
+            if (!title || !content) return alert("Fill in both title and description!");
             
             pendingNoteData = { uid: currentUserUid, title, content };
             isPlacementMode = true;
-            
-            // Reset other modes
-            isDeleteMode = false; isEditMode = false;
+            isDeleteMode = false;
             document.getElementById('deleteBtn').classList.remove('delete-active');
-            document.getElementById('editBtn').classList.remove('active');
 
             window.closeARModal();
             
-            // Update UI to prompt user to tap
-            statusText.innerText = "TAP CROSSHAIR TO DROP NOTE";
+            // Activate Tap Zone
+            tapZone.style.display = "block";
+            
+            statusText.innerText = "TAP ANYWHERE TO DROP NOTE";
             statusBadge.style.borderColor = "#22d3ee";
             crosshair.style.borderColor = "#22d3ee";
             crosshair.style.transform = "translate(-50%, -50%) scale(1.5)";
         };
 
-        // --- AR Interaction (Tap to place) ---
-        const handleScreenTap = async (e) => {
-            // Ignore if clicking UI
-            if (!isPlacementMode || !pendingNoteData || e.target.closest('.ui-layer') || e.target.closest('#arModal')) return;
+        // --- Reliable Screen Tap for Placing Notes ---
+        window.handlePlacementTap = async () => {
+            if (!isPlacementMode || !pendingNoteData) return;
             
             const cam = document.querySelector('#arCamera');
             if (!cam) return;
 
             if (window.navigator.vibrate) window.navigator.vibrate(50);
             
-            // Calculate position 2.5 meters strictly in front of where camera is currently looking
+            // Get Camera Math
             const worldPos = new THREE.Vector3(); 
             cam.object3D.getWorldPosition(worldPos);
-            
             const dir = new THREE.Vector3(0, 0, -1); 
             dir.applyQuaternion(cam.object3D.quaternion);
             
+            // Calculate coordinates exactly 2.5 meters in front of camera
+            const newX = parseFloat((worldPos.x + (dir.x * 2.5)).toFixed(3));
+            const newY = parseFloat((worldPos.y + (dir.y * 2.5)).toFixed(3));
+            const newZ = parseFloat((worldPos.z + (dir.z * 2.5)).toFixed(3));
+
             try {
-                statusText.innerText = "SAVING...";
+                statusText.innerText = "SAVING ANCHOR...";
                 await addDoc(collection(db, "notes"), {
                     ...pendingNoteData,
-                    x: worldPos.x + (dir.x * 2.5), 
-                    y: worldPos.y + (dir.y * 2.5), 
-                    z: worldPos.z + (dir.z * 2.5),
+                    x: newX, y: newY, z: newZ,
                     timestamp: serverTimestamp()
                 });
                 
                 // Reset State
                 isPlacementMode = false; 
                 pendingNoteData = null;
+                tapZone.style.display = "none"; // Hide tap zone
                 
                 statusText.innerText = "SPATIAL TRACKING ACTIVE";
                 statusBadge.style.borderColor = "rgba(2, 132, 199, 0.4)";
@@ -276,42 +273,22 @@
                 
                 window.loadARNotes(); 
             } catch (err) {
-                alert("Failed to anchor note.");
+                alert("Failed to anchor note: " + err.message);
             }
         };
 
-        // Register tap events on the document
-        document.addEventListener('touchend', handleScreenTap);
-        document.addEventListener('click', (e) => { if (e.detail > 0) handleScreenTap(e); });
-
-        // --- Toggle Buttons ---
+        // --- Toggle Delete Mode ---
         window.toggleDeleteMode = () => {
             const btn = document.getElementById('deleteBtn');
             isDeleteMode = !isDeleteMode;
-            isEditMode = false; isPlacementMode = false;
-            document.getElementById('editBtn').classList.remove('active');
+            isPlacementMode = false;
+            tapZone.style.display = "none";
             
             if(isDeleteMode) {
                 btn.classList.add('delete-active');
-                statusText.innerText = "TAP A NOTE TO DELETE";
+                statusText.innerText = "AIM CURSOR AT NOTE AND TAP SCREEN";
             } else {
                 btn.classList.remove('delete-active');
-                statusText.innerText = "SPATIAL TRACKING ACTIVE";
-            }
-            window.loadARNotes();
-        };
-
-        window.toggleEditMode = () => {
-            const btn = document.getElementById('editBtn');
-            isEditMode = !isEditMode;
-            isDeleteMode = false; isPlacementMode = false;
-            document.getElementById('deleteBtn').classList.remove('delete-active');
-            
-            if(isEditMode) {
-                btn.classList.add('active');
-                statusText.innerText = "TAP A NOTE TO EDIT";
-            } else {
-                btn.classList.remove('active');
                 statusText.innerText = "SPATIAL TRACKING ACTIVE";
             }
             window.loadARNotes();
@@ -321,7 +298,7 @@
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUserUid = user.uid;
-                setTimeout(window.loadARNotes, 1500); // Wait for AR.js to init
+                setTimeout(window.loadARNotes, 1500); 
             } else {
                 window.location.replace("loginPage.html");
             }
