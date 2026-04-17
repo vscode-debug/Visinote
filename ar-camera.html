@@ -28,7 +28,7 @@
         
         /* Clean up AR.js video handling */
         .arjs-loader { display: none !important; }
-        #arjs-video { position: absolute !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; object-fit: cover !important; z-index: -1 !important; }
+        #arjs-video { position: absolute !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; object-fit: cover !important; z-index: -1 !important; transform: scaleY(1); }
         
         /* UI Overlay */
         .ui-layer { position: absolute; inset: 0; z-index: 100; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; }
@@ -42,6 +42,12 @@
         .status-badge { position: absolute; top: 80px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); padding: 8px 20px; border-radius: 30px; border: 1px solid rgba(2, 132, 199, 0.4); color: #22d3ee; font-size: 0.75rem; font-weight: 800; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; transition: 0.3s; }
         .pulse-dot { width: 8px; height: 8px; background: #22d3ee; border-radius: 50%; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(34, 211, 238, 0); } 100% { box-shadow: 0 0 0 0 rgba(34, 211, 238, 0); } }
+
+        /* Depth Control Slider */
+        .depth-control { display: none; position: absolute; bottom: 130px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); border: 1px solid #0284c7; padding: 12px 25px; border-radius: 30px; z-index: 101; align-items: center; gap: 15px; width: 85%; max-width: 350px; pointer-events: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .depth-slider { flex: 1; accent-color: #22d3ee; }
+        .depth-label { color: #22d3ee; font-weight: 700; font-size: 0.85rem; width: 45px; text-align: right; }
+        .depth-icon { color: white; font-size: 1rem; }
 
         /* Bottom Controls */
         .ar-controls { padding: 30px 20px; display: flex; justify-content: center; align-items: center; gap: 30px; pointer-events: auto; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); }
@@ -99,6 +105,12 @@
 
         <div class="crosshair" id="crosshair"></div>
 
+        <div class="depth-control" id="depthControl">
+            <i class="fa-solid fa-people-arrows depth-icon"></i>
+            <input type="range" min="0.5" max="10" step="0.5" value="2.5" class="depth-slider" id="depthSlider" oninput="updateDepthLabel()">
+            <span class="depth-label" id="depthLabel">2.5m</span>
+        </div>
+
         <div class="ar-controls">
             <button class="action-btn" id="deleteBtn" onclick="toggleDeleteMode()">
                 <i class="fa-solid fa-trash-can"></i><span>Delete</span>
@@ -118,7 +130,7 @@
             </div>
             <input type="text" id="arNoteTitle" class="modal-input" placeholder="Title..." />
             <textarea id="arNoteContent" class="modal-textarea" placeholder="Description..."></textarea>
-            <button id="arSaveNoteBtn" class="save-btn" onclick="preparePlacement()">Ready to Place</button>
+            <button id="arSaveNoteBtn" class="save-btn" onclick="preparePlacement()">Set Position</button>
         </div>
     </div>
 
@@ -151,11 +163,20 @@
         const statusBadge = document.getElementById('statusBadge');
         const crosshair = document.getElementById('crosshair');
         const tapZone = document.getElementById('tapZone');
+        const depthControl = document.getElementById('depthControl');
+
+        // Allow live updating of the slider label
+        window.updateDepthLabel = () => {
+            const val = document.getElementById('depthSlider').value;
+            document.getElementById('depthLabel').innerText = val + "m";
+        };
 
         // Fetch and render notes from Database
         window.loadARNotes = async () => {
             if (!currentUserUid) return;
             try {
+                // If you want to load shared notes later, you'd change this query. 
+                // Currently it strictly loads notes owned by the logged-in user.
                 const q = query(collection(db, "notes"), where("uid", "==", currentUserUid));
                 const snap = await getDocs(q);
                 notesGroup.innerHTML = ''; 
@@ -164,16 +185,14 @@
                     const data = docSnap.data();
                     const el = document.createElement('a-entity');
                     
-                    // Safety check coordinates
                     const posX = typeof data.x === 'number' ? data.x : 0;
                     const posY = typeof data.y === 'number' ? data.y : 1.6;
                     const posZ = typeof data.z === 'number' ? data.z : -2;
 
                     el.setAttribute('position', `${posX} ${posY} ${posZ}`);
-                    el.setAttribute('billboard', ''); // Custom native script
-                    el.classList.add('raycastable-note'); // Allows cursor to click it
+                    el.setAttribute('billboard', ''); 
+                    el.classList.add('raycastable-note'); 
                     
-                    // Design the AR Note card (Scaled safely)
                     let html = `
                         <a-plane color="#0f0f14" width="1.4" height="0.8" opacity="0.9"></a-plane>
                         <a-plane color="#0284c7" width="1.4" height="0.05" position="0 0.4 0.01"></a-plane>
@@ -187,9 +206,14 @@
 
                     el.innerHTML = html;
 
-                    // Interaction logic (Deleting)
+                    // Deletion Logic with Ownership Validation
                     el.addEventListener('click', async (e) => {
                         if (isDeleteMode) {
+                            if (data.uid !== currentUserUid) {
+                                alert("Unauthorized: You can only delete notes that you created.");
+                                return;
+                            }
+
                             if (confirm(`Delete note: "${data.title}"?`)) {
                                 await deleteDoc(doc(db, "notes", docSnap.id));
                                 window.loadARNotes();
@@ -224,10 +248,11 @@
 
             window.closeARModal();
             
-            // Activate Tap Zone
+            // Activate Tap Zone & Distance Slider
             tapZone.style.display = "block";
+            depthControl.style.display = "flex";
             
-            statusText.innerText = "TAP ANYWHERE TO DROP NOTE";
+            statusText.innerText = "ADJUST DISTANCE & TAP TO STICK";
             statusBadge.style.borderColor = "#22d3ee";
             crosshair.style.borderColor = "#22d3ee";
             crosshair.style.transform = "translate(-50%, -50%) scale(1.5)";
@@ -242,16 +267,18 @@
 
             if (window.navigator.vibrate) window.navigator.vibrate(50);
             
-            // Get Camera Math
+            // Get Distance from Slider
+            const selectedDistance = parseFloat(document.getElementById('depthSlider').value);
+
+            // Get Camera Direction & Apply Depth Slider Distance
             const worldPos = new THREE.Vector3(); 
             cam.object3D.getWorldPosition(worldPos);
             const dir = new THREE.Vector3(0, 0, -1); 
             dir.applyQuaternion(cam.object3D.quaternion);
             
-            // Calculate coordinates exactly 2.5 meters in front of camera
-            const newX = parseFloat((worldPos.x + (dir.x * 2.5)).toFixed(3));
-            const newY = parseFloat((worldPos.y + (dir.y * 2.5)).toFixed(3));
-            const newZ = parseFloat((worldPos.z + (dir.z * 2.5)).toFixed(3));
+            const newX = parseFloat((worldPos.x + (dir.x * selectedDistance)).toFixed(3));
+            const newY = parseFloat((worldPos.y + (dir.y * selectedDistance)).toFixed(3));
+            const newZ = parseFloat((worldPos.z + (dir.z * selectedDistance)).toFixed(3));
 
             try {
                 statusText.innerText = "SAVING ANCHOR...";
@@ -264,7 +291,8 @@
                 // Reset State
                 isPlacementMode = false; 
                 pendingNoteData = null;
-                tapZone.style.display = "none"; // Hide tap zone
+                tapZone.style.display = "none"; 
+                depthControl.style.display = "none";
                 
                 statusText.innerText = "SPATIAL TRACKING ACTIVE";
                 statusBadge.style.borderColor = "rgba(2, 132, 199, 0.4)";
@@ -283,6 +311,7 @@
             isDeleteMode = !isDeleteMode;
             isPlacementMode = false;
             tapZone.style.display = "none";
+            depthControl.style.display = "none";
             
             if(isDeleteMode) {
                 btn.classList.add('delete-active');
