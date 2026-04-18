@@ -4,77 +4,63 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VisiNote | Dashboard</title>
-    
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
-        :root {
-            --bg-main: #112d5c;       
-            --glass-bg: rgba(255, 255, 255, 0.05);  
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-            --cyan-accent: #0284c7;      
-            --cyan-glow: rgba(2, 132, 199, 0.4); 
-            --text-main: #f8fafc;        
-            --text-muted: #94a3b8;      
-        }
-
+        :root { --bg-main: #112d5c; --glass-bg: rgba(255, 255, 255, 0.05); --glass-border: rgba(255, 255, 255, 0.1); --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); --cyan-accent: #0284c7; --cyan-glow: rgba(2, 132, 199, 0.4); --text-main: #f8fafc; --text-muted: #94a3b8; }
         * { font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; padding: 0; box-sizing: border-box; text-decoration: none; list-style: none; }
+        .dashboard-bg { background-color: var(--bg-main); background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px); background-size: 40px 40px; }
         
-        .dashboard-bg {
-            background-color: var(--bg-main);
-            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-                              linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-            background-size: 40px 40px;
-        }
-
-        /* Animated Background Blobs */
         .bg-blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.6; z-index: 0; pointer-events: none; animation: drift alternate infinite ease-in-out; }
         .blob-1 { width: 600px; height: 600px; background: #0284c7; top: -10%; left: -10%; animation-duration: 25s; }
         .blob-2 { width: 700px; height: 700px; background: #8b5cf6; bottom: -20%; right: -10%; animation-duration: 28s; animation-delay: -5s; }
         @keyframes drift { 0% { transform: translate(0px, 0px) scale(1); } 33% { transform: translate(50px, -50px) scale(1.1); } 66% { transform: translate(-40px, 60px) scale(0.9); } 100% { transform: translate(20px, 20px) scale(1.05); } }
 
-        /* Top Bar Custom Elements */
         .search-container { position: relative; display: flex; align-items: center; }
         .search-input { width: 40px; height: 40px; border-radius: 20px; border: 1px solid transparent; background: transparent; padding: 0 15px 0 40px; color: var(--text-main); font-size: 14px; transition: all 0.4s ease; cursor: pointer; }
         .search-input:focus, .search-container:hover .search-input { width: 250px; background: var(--glass-bg); border: 1px solid var(--glass-border); cursor: text; box-shadow: inset 0 0 10px rgba(0,0,0,0.1); }
         .search-icon { position: absolute; left: 12px; color: var(--text-muted); pointer-events: none; transition: color 0.3s; }
         .search-input:focus ~ .search-icon, .search-container:hover .search-icon { color: var(--cyan-accent); }
 
-        .profile-container { position: relative; cursor: pointer; padding: 5px; opacity: 0.7; transition: opacity 0.3s, transform 0.3s; }
-        .profile-container:hover { opacity: 1; transform: scale(1.1); }
-
-        /* Glass Cards */
         .glass-card { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 24px; padding: 30px; box-shadow: var(--glass-shadow); position: relative; display: flex; flex-direction: column; }
-        
-        /* Note Items */
         .recent-notes-list::-webkit-scrollbar { width: 6px; }
         .recent-notes-list::-webkit-scrollbar-thumb { background: rgba(2, 132, 199, 0.5); border-radius: 10px; }
         .note-item { padding: 15px; background: rgba(255, 255, 255, 0.03); border-radius: 12px; border: 1px solid transparent; transition: all 0.3s; cursor: pointer; }
         .note-item:hover { border-color: var(--cyan-accent); background: rgba(2, 132, 199, 0.1); transform: translateX(5px); }
 
-        /* Add Btn */
         .add-note-btn { background: var(--cyan-accent); box-shadow: 0 4px 15px var(--cyan-glow); transition: all 0.3s; }
         .add-note-btn:hover { transform: translateY(-3px); background: #38bdf8; box-shadow: 0 6px 20px var(--cyan-glow); }
-
-        /* Stats text */
         .total-number { font-size: 5.5rem; font-weight: 800; background: linear-gradient(135deg, #fff, #38bdf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; }
 
-        /* Mobile Bottom Dock */
         .bottom-dock { background: rgba(10, 25, 50, 0.85); backdrop-filter: blur(25px); border: 1px solid var(--glass-border); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5); }
         .dock-item { transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .dock-item:hover i { background: var(--cyan-accent); transform: translateY(-8px) scale(1.1); box-shadow: 0 10px 20px var(--cyan-glow); color: white; }
         .dock-item.exit:hover i { background: #ef4444; box-shadow: 0 10px 20px rgba(239, 68, 68, 0.4); }
 
-        /* Modal styling */
         #globalNoteModal { display: none; position: fixed; inset: 0; z-index: 9999; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); backdrop-filter: blur(12px); padding: 20px; }
         .modal-input:focus, .modal-textarea:focus { border-color: var(--cyan-accent); }
+
+        /* CUSTOM POPUPS */
+        .custom-popup-overlay { position: fixed; inset: 0; z-index: 100000; display: none; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(8px); padding: 20px; }
+        .custom-popup-box { background: #0f0f14; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 30px; max-width: 400px; width: 100%; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); color: white; font-family: 'Plus Jakarta Sans', sans-serif; }
+        .custom-popup-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; color: #22d3ee; }
+        .custom-popup-msg { font-size: 0.95rem; color: #cbd5e1; margin-bottom: 25px; line-height: 1.5; }
+        .custom-popup-btn { background: #0284c7; color: white; border: none; padding: 12px 25px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; width: 100%; }
+        .custom-popup-btn:hover { background: #38bdf8; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4); }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden bg-black text-slate-100">
+
+    <div id="customAlert" class="custom-popup-overlay">
+        <div class="custom-popup-box">
+            <h3 id="alertTitle" class="custom-popup-title">Notification</h3>
+            <p id="alertMessage" class="custom-popup-msg"></p>
+            <button onclick="closeCustomAlert()" class="custom-popup-btn">OK</button>
+        </div>
+    </div>
 
     <aside class="w-[260px] h-full bg-[#0a0a0c] border-r border-white/10 flex flex-col justify-between py-6 z-[1000] hidden md:flex shrink-0">
         <div>
@@ -84,7 +70,6 @@
                 </div>
                 <span class="text-white text-2xl font-bold tracking-tight">VisiNote</span>
             </div>
-
             <nav class="flex flex-col gap-2">
                 <a href="main.html" class="flex items-center gap-4 px-6 py-3 mx-2 rounded-xl text-cyan-400 bg-cyan-400/10 border border-cyan-400/20 transition-all">
                     <i class="fa-solid fa-layer-group text-xl w-6"></i>
@@ -108,7 +93,6 @@
                 </a>
             </nav>
         </div>
-
         <div class="px-4">
             <button class="logout-trigger flex items-center gap-4 px-6 py-3 w-full rounded-xl text-red-500 hover:bg-red-500/10 transition-all text-left">
                 <i class="fa-solid fa-arrow-right-from-bracket text-xl w-6"></i>
@@ -118,16 +102,12 @@
     </aside>
 
     <main class="flex-1 relative flex flex-col h-full overflow-y-auto dashboard-bg">
-        
         <div class="bg-blob blob-1"></div>
         <div class="bg-blob blob-2"></div>
 
         <header class="flex justify-between items-center p-6 md:px-12 z-10 relative border-b border-white/10 bg-[#112d5c]/50 backdrop-blur-md">
-            <div class="md:hidden flex items-center gap-2 font-bold text-xl text-white">
-                Visi<span class="text-cyan-400">Note</span>
-            </div>
+            <div class="md:hidden flex items-center gap-2 font-bold text-xl text-white">Visi<span class="text-cyan-400">Note</span></div>
             <div class="hidden md:block text-slate-400 text-sm font-medium tracking-widest uppercase">Dashboard</div>
-
             <div class="flex items-center gap-6">
                 <div class="search-container">
                     <input type="text" class="search-input" placeholder="Search notes...">
@@ -140,7 +120,6 @@
         </header>
 
         <div class="p-6 md:p-12 flex flex-col gap-10 pb-32 md:pb-12 z-10 relative">
-            
             <section class="greeting-section animate-fade-in">
                 <div class="text-sm text-cyan-400 uppercase tracking-widest font-semibold mb-2">Personal Workspace</div>
                 <h1 class="text-5xl font-light mb-2 text-white">Hey, <span id="display-name" class="font-bold">User</span></h1>
@@ -148,32 +127,26 @@
             </section>
 
             <section class="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fade-in-up">
-                
                 <div class="glass-card h-[350px]">
                     <div class="text-lg font-semibold mb-4 flex items-center gap-3 border-b border-white/10 pb-4 text-white">
                         <i class="fa-regular fa-clock text-cyan-400"></i> Recent Notes
                     </div>
-                    
                     <div class="recent-notes-list flex-1 flex flex-col gap-3 overflow-y-auto pr-2 mb-4" id="recent-notes-container">
                         <div class="text-center text-slate-400 text-sm mt-4">Loading notes...</div>
                     </div>
-
                     <button class="add-note-btn self-start flex items-center gap-2 text-white px-6 py-3 rounded-full font-semibold" onclick="openGlobalModal()">
                         <i class="fa-solid fa-plus"></i> Add Note
                     </button>
                 </div>
-
                 <div class="glass-card h-[350px]">
                     <div class="text-lg font-semibold mb-4 flex items-center gap-3 border-b border-white/10 pb-4 text-white">
                         <i class="fa-solid fa-chart-simple text-cyan-400"></i> Workspace Stats
                     </div>
-                    
                     <div class="flex-1 flex flex-col items-center justify-center text-center">
                         <div class="total-number" id="total-notes-count">0</div>
                         <div class="mt-3 text-lg text-slate-400 font-medium">Total Notes Count</div>
                     </div>
                 </div>
-
             </section>
         </div>
     </main>
@@ -204,9 +177,7 @@
     <div id="globalNoteModal">
         <div class="bg-[#0f0f14] w-full max-w-[450px] p-8 rounded-3xl border border-white/10 shadow-2xl relative">
             <i class="fa-solid fa-xmark absolute top-6 right-6 text-slate-500 hover:text-white cursor-pointer text-xl transition-all" onclick="closeGlobalModal()"></i>
-            <h2 class="text-2xl font-bold mb-6 text-white">
-                <i class="fa-solid fa-expand text-cyan-400 mr-2"></i> Initialize Anchor
-            </h2>
+            <h2 class="text-2xl font-bold mb-6 text-white"><i class="fa-solid fa-expand text-cyan-400 mr-2"></i> Initialize Anchor</h2>
             <input type="text" id="globalNoteTitle" class="w-full p-4 mb-4 rounded-xl bg-white/5 border border-transparent text-white outline-none modal-input" placeholder="Title..." />
             <textarea id="globalNoteContent" class="w-full p-4 mb-6 rounded-xl bg-white/5 border border-transparent text-white outline-none resize-none h-28 modal-textarea" placeholder="Description..."></textarea>
             <button id="globalSaveNoteBtn" class="w-full py-4 bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-lg rounded-xl transition-colors shadow-lg shadow-cyan-600/30">Save to Workspace</button>
@@ -214,21 +185,17 @@
     </div>
 
     <script>
+        // Custom Alert Logic
+        window.customAlert = (message, title = "Notification") => {
+            document.getElementById('alertTitle').innerText = title;
+            document.getElementById('alertMessage').innerText = message;
+            document.getElementById('customAlert').style.display = 'flex';
+        };
+        window.closeCustomAlert = () => document.getElementById('customAlert').style.display = 'none';
+
         document.addEventListener("DOMContentLoaded", () => {
-            anime({
-                targets: ['.animate-fade-in'],
-                opacity: [0, 1],
-                duration: 1000,
-                easing: 'easeOutCubic'
-            });
-            anime({
-                targets: ['.animate-fade-in-up'],
-                translateY: [20, 0],
-                opacity: [0, 1],
-                duration: 1000,
-                delay: 200,
-                easing: 'easeOutCubic'
-            });
+            anime({ targets: ['.animate-fade-in'], opacity: [0, 1], duration: 1000, easing: 'easeOutCubic' });
+            anime({ targets: ['.animate-fade-in-up'], translateY: [20, 0], opacity: [0, 1], duration: 1000, delay: 200, easing: 'easeOutCubic' });
         });
 
         window.openGlobalModal = () => document.getElementById('globalNoteModal').style.display = 'flex';
@@ -239,12 +206,12 @@
         };
 
         window.generateShareLink = () => {
-            if(!window.currentUserUid) return alert("Please log in to share your workspace.");
+            if(!window.currentUserUid) return customAlert("Please log in to share your workspace.", "Authentication Required");
             const link = window.location.origin + "/shared.html?user=" + window.currentUserUid;
             navigator.clipboard.writeText(link).then(() => {
-                alert("Share link copied to clipboard!\n\n" + link);
+                customAlert("Share link copied to clipboard!\n\n" + link, "Success");
             }).catch(() => {
-                alert("Your share link is: \n" + link);
+                customAlert("Your share link is: \n" + link, "Link Generated");
             });
         };
     </script>
@@ -255,18 +222,16 @@
         import { getFirestore, doc, getDoc, collection, query, where, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
-    apiKey: "AIzaSyDfdbA_iCryNL6JuOkZtSaPH3pEfza_rs0",
-    authDomain: "visinote-66f90.firebaseapp.com",
-    projectId: "visinote-66f90",
-    storageBucket: "visinote-66f90.firebasestorage.app",
-    messagingSenderId: "382835155909",
-    appId: "1:382835155909:web:f7f8f44b85f8cdc1dce1ac"
-};
-
+            apiKey: "AIzaSyDfdbA_iCryNL6JuOkZtSaPH3pEfza_rs0",
+            authDomain: "visinote-66f90.firebaseapp.com",
+            projectId: "visinote-66f90",
+            storageBucket: "visinote-66f90.firebasestorage.app",
+            messagingSenderId: "382835155909",
+            appId: "1:382835155909:web:f7f8f44b85f8cdc1dce1ac"
+        };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        
         window.currentUserUid = null;
 
         const displayNameEl = document.getElementById('display-name');
@@ -276,46 +241,27 @@
 
         async function loadDashboardNotes() {
             if (!window.currentUserUid) return;
-
             try {
                 const q = query(collection(db, "notes"), where("uid", "==", window.currentUserUid));
                 const querySnapshot = await getDocs(q);
-                
                 totalNotesEl.innerText = querySnapshot.size;
-
                 let notesData = [];
                 querySnapshot.forEach((doc) => { notesData.push({ id: doc.id, ...doc.data() }); });
-                
-                notesData.sort((a, b) => {
-                    const timeA = a.timestamp?.toMillis() || 0;
-                    const timeB = b.timestamp?.toMillis() || 0;
-                    return timeB - timeA;
-                });
-
+                notesData.sort((a, b) => (b.timestamp?.toMillis() || 0) - (a.timestamp?.toMillis() || 0));
                 recentNotesContainer.innerHTML = '';
-                
                 if(notesData.length === 0) {
                     recentNotesContainer.innerHTML = `<div class="text-center text-slate-400 text-sm mt-4">No notes yet. Add one!</div>`;
                     return;
                 }
-
                 const topNotes = notesData.slice(0, 5);
                 topNotes.forEach(note => {
                     const noteEl = document.createElement('div');
                     noteEl.className = 'note-item';
-                    
-                    const dateObj = note.timestamp ? note.timestamp.toDate() : new Date();
-                    const dateStr = dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-
-                    noteEl.innerHTML = `
-                        <h4 class="font-semibold mb-[2px] text-white">${note.title || 'Untitled'}</h4>
-                        <span class="text-[11px] text-slate-400">Added ${dateStr}</span>
-                    `;
+                    const dateStr = note.timestamp ? note.timestamp.toDate().toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : new Date().toLocaleDateString();
+                    noteEl.innerHTML = `<h4 class="font-semibold mb-[2px] text-white">${note.title || 'Untitled'}</h4><span class="text-[11px] text-slate-400">Added ${dateStr}</span>`;
                     recentNotesContainer.appendChild(noteEl);
                 });
-
             } catch(err) {
-                console.error("Error loading notes:", err);
                 recentNotesContainer.innerHTML = `<div class="text-red-500 text-sm text-center">Error loading notes.</div>`;
             }
         }
@@ -324,31 +270,19 @@
             e.preventDefault();
             const title = document.getElementById("globalNoteTitle").value.trim();
             const content = document.getElementById("globalNoteContent").value.trim();
-
-            if (!window.currentUserUid) return alert("Error: User session not found. Please log in again.");
-            if (!title || !content) return alert("Please fill out the title and description!");
+            if (!window.currentUserUid) return customAlert("Error: User session not found. Please log in again.", "Error");
+            if (!title || !content) return customAlert("Please fill out the title and description!", "Input Required");
 
             saveNoteBtn.innerText = "Processing...";
             saveNoteBtn.style.opacity = "0.7";
-
             try {
-                await addDoc(collection(db, "notes"), {
-                    uid: window.currentUserUid, 
-                    title: title, 
-                    content: content, 
-                    timestamp: serverTimestamp(), 
-                    x: 0, y: 1.6, z: -2 
-                });
-                
+                await addDoc(collection(db, "notes"), { uid: window.currentUserUid, title, content, timestamp: serverTimestamp(), x: 0, y: 1.6, z: -2 });
                 window.closeGlobalModal();
                 saveNoteBtn.innerText = "Save to Workspace";
                 saveNoteBtn.style.opacity = "1";
-                
                 loadDashboardNotes();
-
             } catch (err) {
-                console.error("Error adding note:", err);
-                alert("Failed to save note.");
+                customAlert("Failed to save note.", "Error");
                 saveNoteBtn.innerText = "Save to Workspace";
                 saveNoteBtn.style.opacity = "1";
             }
@@ -357,31 +291,21 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 window.currentUserUid = user.uid;
-                
                 try {
                     const userSnap = await getDoc(doc(db, "users", user.uid));
                     if (userSnap.exists()) {
                         const userData = userSnap.data();
                         displayNameEl.innerText = userData.firstName || userData.username || "User";
-                    } else {
-                        displayNameEl.innerText = user.displayName || user.email.split('@')[0];
-                    }
-                } catch(err) {
-                    displayNameEl.innerText = "User";
-                }
-
+                    } else { displayNameEl.innerText = user.displayName || user.email.split('@')[0]; }
+                } catch(err) { displayNameEl.innerText = "User"; }
                 loadDashboardNotes();
-
-            } else {
-                console.log("No user signed in.");
             }
         });
 
-        // Universal Logout trigger (Handles both Sidebar and Bottom Dock buttons)
         document.querySelectorAll('.logout-trigger').forEach(btn => {
             btn.addEventListener('click', () => {
                 signOut(auth).then(() => { window.location.href = "index.html"; })
-                .catch((error) => alert("Error logging out: " + error.message));
+                .catch((error) => customAlert("Error logging out: " + error.message, "Error"));
             });
         });
     </script>
