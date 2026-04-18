@@ -1,29 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VisiNote | Welcome</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
         :root {
+            /* LIGHT THEME GLASSMORPHISM */
             --bg-main: #1e4b8f;      
             --card-dark: rgba(255, 255, 255, 0.85);
             --glass-bg: rgba(255, 255, 255, 0.4);  
             --cyan-accent: #0284c7;      
             --cyan-glow: rgba(66, 81, 88, 0.2); 
+            
             --text-main: #0f172a;        
             --text-muted: #64748b;      
             --input-bg: rgba(255, 255, 255, 0.7);  
             --border-color: rgba(15, 23, 42, 0.1); 
         }
-        * { font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; padding: 0; box-sizing: border-box; text-decoration: none; list-style: none; }
-        body { height: 100vh; display: flex; align-items: center; justify-content: center; background: #112d5c; position: relative; overflow: hidden; color: var(--text-main); background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px); background-size: 40px 40px; }
+        * {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            text-decoration: none;
+            list-style: none;
+        }
 
-        /* Background Blobs */
+        body {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #112d5c;
+            position: relative;
+            overflow: hidden;
+            color: var(--text-main);
+            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        /* Animated Background Blobs */
         .bg-blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.7; z-index: 0; pointer-events: none; animation: drift alternate infinite ease-in-out; }
         .blob-1 { width: 500px; height: 500px; background: #0284c7; top: -10%; left: -10%; animation-duration: 20s; }
         .blob-2 { width: 600px; height: 600px; background: #8b5cf6; bottom: -20%; right: -10%; animation-duration: 25s; animation-delay: -5s; }
@@ -34,7 +59,7 @@
         .brand-text-login { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.5px; color: #ffffff; }
         .brand-text-login span { color: #38bdf8; }
 
-        .main-container { position: relative; width: 900px; height: 550px; max-width: 95%; background: rgb(30 17 17 / 40%); backdrop-filter: blur(20px); border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.1); overflow: hidden; z-index: 2; }
+        .main-container { position: relative; width: 900px; height: 550px; max-width: 95%; background: rgb(30 17 17 / 40%); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(255, 255, 255, 0.1); overflow: hidden; z-index: 2; }
         .vortex-container { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; height: 100%; z-index: 1; pointer-events: none; }
         .vortex-mist { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 350px; height: 350px; background: radial-gradient(circle, var(--cyan-glow) 0%, transparent 70%); filter: blur(50px); animation: pulse 4s infinite alternate ease-in-out; }
         .vortex-ring { position: absolute; top: 50%; left: 50%; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.1); transform: translate(-50%, -50%); animation: spin infinite linear; }
@@ -49,6 +74,7 @@
 
         .form-panel { position: absolute; top: 0; left: 50%; width: 50%; height: 100%; background: var(--card-dark); box-shadow: -15px 0 40px rgba(0, 0, 0, 0.1); transition: left 0.7s cubic-bezier(0.68, -0.55, 0.265, 1.15); z-index: 3; overflow: hidden; border-left: 1px solid rgba(255, 255, 255, 0.5); }
         .main-container.register-mode .form-panel { left: 0; box-shadow: 15px 0 40px rgba(0, 0, 0, 0.1); border-left: none; border-right: 1px solid rgba(255, 255, 255, 0.5); }
+        
         .form-wrapper { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 40px; text-align: center; transition: opacity 0.4s ease, visibility 0.4s; }
         .login-form { opacity: 1; visibility: visible; }
         .register-form { opacity: 0; visibility: hidden; }
@@ -69,6 +95,7 @@
 
         .btn-submit { width: 100%; padding: 14px; background: var(--cyan-accent); color: #ffffff; border: none; border-radius: 10px; font-size: 15px; font-weight: 800; cursor: pointer; margin-top: 15px; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0, 229, 255, 0.2); }
         .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 229, 255, 0.5); background: #0ea5e9; }
+        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
 
         .forgot-link { width: 100%; text-align: right; margin-top: -3px; margin-bottom: 5px; }
         .forgot-link a { color: var(--text-muted); font-size: 12px; transition: 0.3s; font-weight: 600; }
@@ -81,6 +108,7 @@
         .social-icons { display: flex; gap: 12px; margin-top: 15px; }
         .social-icons button { background: var(--input-bg); border: 1px solid var(--border-color); color: var(--text-main); width: 45px; height: 45px; border-radius: 10px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; }
         .social-icons button:hover { border-color: var(--cyan-accent); color: var(--cyan-accent); background: rgba(0, 229, 255, 0.05); box-shadow: 0 0 15px rgba(0, 229, 255, 0.2); }
+        .social-icons button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
 
         .ai-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #52525b; font-size: 15px; cursor: pointer; transition: 0.3s; padding: 5px; }
         .ai-btn:hover { color: var(--cyan-accent); transform: translateY(-50%) scale(1.15); text-shadow: 0 0 10px var(--cyan-accent); }
@@ -89,9 +117,7 @@
 
         @media (max-width: 768px) { .form-panel { width: 100%; left: 0 !important; border-radius: 24px; box-shadow: none; border: none; } .vortex-container { display: none; } }
 
-        /* =========================================
-           CUSTOM POPUP UI STYLES
-           ========================================= */
+        /* CUSTOM POPUPS */
         .custom-popup-overlay { position: fixed; inset: 0; z-index: 100000; display: none; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(8px); padding: 20px; }
         .custom-popup-box { background: #0f0f14; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 30px; max-width: 400px; width: 100%; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); color: white; font-family: 'Plus Jakarta Sans', sans-serif; }
         .custom-popup-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; color: #22d3ee; }
@@ -137,7 +163,6 @@
     </div>
 
     <div class="main-container" id="mainContainer">
-        
         <div class="vortex-container">
             <div class="vortex-mist"></div>
             <div class="vortex-ring ring-1"></div>
@@ -167,7 +192,7 @@
                         <a href="#" id="forgot-password-link">Forgot Password?</a>
                     </div>
                     
-                    <button type="submit" class="btn-submit">Enter Workspace</button>
+                    <button type="submit" id="login-submit-btn" class="btn-submit">Enter Workspace</button>
                     
                     <div style="display: flex; justify-content: center; width: 100%;">
                         <div class="social-icons">
@@ -195,7 +220,9 @@
                     </div>
                     <div class="input-box"><input type="email" id="register-email" placeholder="Email Address" required><i class="fa-solid fa-envelope input-icon"></i></div>
                     <div class="input-box"><input type="password" id="register-password" placeholder="Password" required><i class="fa-solid fa-lock input-icon"></i></div>
-                    <button type="submit" class="btn-submit">Create Account</button>
+                    
+                    <button type="submit" id="register-submit-btn" class="btn-submit">Create Account</button>
+                    
                     <p class="swap-mode">Already have an account? <span class="swap-link" id="goToLogin">Sign In</span></p>
                 </form>
             </div>
@@ -324,9 +351,19 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // GLOBAL AUTH LOCK (Prevents Spam Clicking & Blocking)
+        let isAuthPending = false;
+
         // REGISTRATION LOGIC
         document.getElementById('firebase-register').addEventListener('submit', async (e) => {
             e.preventDefault(); 
+            if (isAuthPending) return;
+            isAuthPending = true;
+
+            const btn = document.getElementById('register-submit-btn');
+            btn.disabled = true;
+            btn.innerText = "Processing...";
+
             const firstName = document.getElementById('register-firstname').value;
             const lastName = document.getElementById('register-lastname').value;
             const username = document.getElementById('register-username').value;
@@ -336,22 +373,45 @@
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 await addDoc(collection(db, "users"), { uid: userCredential.user.uid, firstName, lastName, username, email, createdAt: new Date() });
                 setTimeout(() => window.location.href = "main.html", 800); 
-            } catch (error) { customAlert("Registration Failed: " + error.message, "Error"); }
+            } catch (error) { 
+                customAlert("Registration Failed: " + error.message, "Error"); 
+                btn.disabled = false;
+                btn.innerText = "Create Account";
+                isAuthPending = false;
+            }
         });
 
         // LOGIN LOGIC
         document.getElementById('firebase-login').addEventListener('submit', async (e) => {
             e.preventDefault(); 
+            if (isAuthPending) return;
+            isAuthPending = true;
+
+            const btn = document.getElementById('login-submit-btn');
+            btn.disabled = true;
+            btn.innerText = "Authenticating...";
+
             const usernameInput = document.getElementById('login-username').value;
             const passwordInput = document.getElementById('login-password').value;
             try {
                 const q = query(collection(db, "users"), where("username", "==", usernameInput));
                 const querySnapshot = await getDocs(q);
-                if (querySnapshot.empty) return customAlert("Username not found. Please register or check your spelling.", "Login Failed");
+                if (querySnapshot.empty) {
+                    btn.disabled = false;
+                    btn.innerText = "Enter Workspace";
+                    isAuthPending = false;
+                    return customAlert("Username not found. Please register or check your spelling.", "Login Failed");
+                }
+                
                 let userEmail = ""; querySnapshot.forEach((doc) => { userEmail = doc.data().email; });
                 await signInWithEmailAndPassword(auth, userEmail, passwordInput);
                 setTimeout(() => window.location.href = "main.html", 800); 
-            } catch (error) { customAlert("Login Failed: Incorrect password or connection issue.", "Error"); }
+            } catch (error) { 
+                customAlert("Login Failed: Incorrect password or connection issue.", "Error"); 
+                btn.disabled = false;
+                btn.innerText = "Enter Workspace";
+                isAuthPending = false;
+            }
         });
 
         // PASSWORD RESET
@@ -367,8 +427,14 @@
             });
         });
 
-        // SOCIAL LOGINS
-        async function handleSocialLogin(provider) {
+        // SOCIAL LOGINS (With Spam Protection)
+        async function handleSocialLogin(provider, btnId) {
+            if (isAuthPending) return;
+            isAuthPending = true;
+
+            const btn = document.getElementById(btnId);
+            btn.disabled = true;
+
             try {
                 const res = await signInWithPopup(auth, provider);
                 await setDoc(doc(db, "users", res.user.uid), {
@@ -377,10 +443,18 @@
                     email: res.user.email, username: res.user.email.split('@')[0], createdAt: new Date()
                 }, { merge: true }); 
                 window.location.href = "main.html";
-            } catch (err) { customAlert("Error: " + err.message, "Authentication Failed"); }
+            } catch (err) { 
+                // Safely ignore if the user simply closes the popup window or spams the click
+                if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
+                    customAlert("Error: " + err.message, "Authentication Failed"); 
+                }
+                btn.disabled = false;
+                isAuthPending = false;
+            }
         }
-        document.getElementById('google-login').addEventListener('click', () => handleSocialLogin(new GoogleAuthProvider()));
-        document.getElementById('github-login').addEventListener('click', () => handleSocialLogin(new GithubAuthProvider()));
+
+        document.getElementById('google-login').addEventListener('click', () => handleSocialLogin(new GoogleAuthProvider(), 'google-login'));
+        document.getElementById('github-login').addEventListener('click', () => handleSocialLogin(new GithubAuthProvider(), 'github-login'));
     </script>
 </body>
 </html>
