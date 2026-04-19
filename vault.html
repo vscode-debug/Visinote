@@ -10,101 +10,62 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
 
     <style>
-        :root { --bg-main: #112d5c; --glass-bg: rgba(255, 255, 255, 0.05); --glass-border: rgba(255, 255, 255, 0.1); --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); --cyan-accent: #0284c7; --cyan-glow: rgba(2, 132, 199, 0.4); --text-main: #f8fafc; --text-muted: #94a3b8; }
-        * { font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; padding: 0; box-sizing: border-box; list-style: none; text-decoration: none; }
+        :root {
+            --bg-main: #112d5c;       
+            --glass-bg: rgba(255, 255, 255, 0.05);  
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            --cyan-accent: #0284c7;      
+            --cyan-glow: rgba(2, 132, 199, 0.4); 
+            --text-main: #f8fafc;        
+            --text-muted: #94a3b8;      
+        }
+
+        * { font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; padding: 0; box-sizing: border-box; list-style: none; }
         body { height: 100vh; background: var(--bg-main); color: var(--text-main); overflow: hidden; display: flex; flex-direction: column; background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px); background-size: 40px 40px; }
-        
+
+        /* Background Blobs */
         .bg-blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.5; z-index: 0; pointer-events: none; animation: drift alternate infinite ease-in-out; }
         .blob-1 { width: 500px; height: 500px; background: #0284c7; top: 10%; left: -10%; animation-duration: 20s; }
-        .blob-2 { width: 600px; height: 600px; background: #8b5cf6; bottom: -10%; right: -5%; animation-duration: 25s; animation-delay: -5s; }
+        .blob-2 { width: 600px; height: 600px; background: #10b981; bottom: -10%; right: -5%; animation-duration: 25s; animation-delay: -5s; }
         @keyframes drift { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(30px, 30px) scale(1.05); } }
 
+        /* Header */
         .header { padding: 20px 50px; background: rgba(17, 45, 92, 0.5); backdrop-filter: blur(15px); border-bottom: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: space-between; z-index: 10; }
-        .back-btn { display: flex; align-items: center; gap: 10px; color: var(--text-muted); cursor: pointer; transition: 0.3s; font-weight: 600; }
+        .back-btn { display: flex; align-items: center; gap: 10px; color: var(--text-muted); cursor: pointer; text-decoration: none; transition: 0.3s; font-weight: 600; }
         .back-btn:hover { color: var(--cyan-accent); }
         .title { font-size: 1.5rem; font-weight: 800; color: white; }
         .title span { color: #38bdf8; }
 
+        /* Main Content */
         .vault-container { flex: 1; padding: 40px 8%; overflow-y: auto; z-index: 10; position: relative; }
-        .vault-header { margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 20px; }
+        .vault-header { margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end; }
         .vault-header h1 { font-size: 2.5rem; font-weight: 300; }
         .vault-header h1 span { font-weight: 700; color: var(--cyan-accent); }
         
-        .search-box { position: relative; width: 100%; max-width: 350px; }
-        .search-box input { width: 100%; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px 15px 12px 45px; color: white; outline: none; transition: 0.3s; }
-        .search-box input:focus { border-color: var(--cyan-accent); box-shadow: 0 0 15px var(--cyan-glow); }
-        .search-box i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
-
+        /* Grid */
         .notes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; padding-bottom: 50px; }
+        
+        /* Note Card */
         .note-card { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 25px; box-shadow: var(--glass-shadow); display: flex; flex-direction: column; gap: 15px; transition: 0.3s; position: relative; overflow: hidden; }
         .note-card:hover { transform: translateY(-5px); border-color: rgba(2, 132, 199, 0.4); box-shadow: 0 10px 30px var(--cyan-glow); }
         
-        .note-title { font-size: 1.2rem; font-weight: 700; color: white; padding-right: 30px; }
-        .note-desc { font-size: 0.95rem; color: #cbd5e1; flex: 1; line-height: 1.5; white-space: pre-wrap; }
+        .note-title { font-size: 1.2rem; font-weight: 700; color: white; }
+        .note-desc { font-size: 0.95rem; color: #cbd5e1; flex: 1; line-height: 1.5; }
+        
         .note-meta { display: flex; flex-direction: column; gap: 5px; margin-top: 10px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.85rem; color: var(--text-muted); }
         .meta-item { display: flex; align-items: center; gap: 8px; }
         .meta-item i { color: var(--cyan-accent); width: 14px; }
-        
-        .details-btn { margin-top: 10px; padding: 8px 0; background: transparent; color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; cursor: pointer; transition: 0.3s; font-size: 0.85rem; font-weight: 600; text-align: center; }
-        .details-btn:hover { background: rgba(56, 189, 248, 0.1); border-color: #38bdf8; }
 
         .delete-btn { position: absolute; top: 20px; right: 20px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); width: 32px; height: 32px; border-radius: 8px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; }
         .delete-btn:hover { background: #ef4444; color: white; }
 
-        .empty-state { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; text-align: center; color: var(--text-muted); }
-        .empty-state i { font-size: 4rem; color: rgba(2, 132, 199, 0.3); margin-bottom: 15px; }
-
+        /* Scrollbar */
         .vault-container::-webkit-scrollbar { width: 8px; }
         .vault-container::-webkit-scrollbar-thumb { background: rgba(2, 132, 199, 0.5); border-radius: 10px; }
-
-        @media (max-width: 768px) { .header { padding: 15px 20px; } .vault-header { flex-direction: column; align-items: flex-start; } .search-box { max-width: 100%; } }
-
-        /* CUSTOM POPUPS & MODALS */
-        .custom-popup-overlay { position: fixed; inset: 0; z-index: 100000; display: none; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(8px); padding: 20px; }
-        .custom-popup-box { background: #0f0f14; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 30px; max-width: 400px; width: 100%; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); color: white; }
-        .custom-popup-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; color: #22d3ee; }
-        .custom-popup-msg { font-size: 0.95rem; color: #cbd5e1; margin-bottom: 25px; line-height: 1.5; }
-        .custom-popup-btn { background: #0284c7; color: white; border: none; padding: 12px 25px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; width: 100%; }
-        .custom-popup-btn:hover { background: #38bdf8; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4); }
-        .custom-popup-btn-cancel { background: transparent; color: white; border: 1px solid rgba(255,255,255,0.2); padding: 12px 25px; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.3s; width: 100%; }
-        .custom-popup-btn-cancel:hover { background: rgba(255,255,255,0.1); }
-        .custom-popup-btn-danger { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); padding: 12px 25px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; width: 100%; }
-        .custom-popup-btn-danger:hover { background: #ef4444; color: white; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); }
-        .custom-popup-actions { display: flex; gap: 15px; }
-
-        .details-modal-box { max-width: 500px; text-align: left; }
-        .close-modal { position: absolute; top: 20px; right: 25px; color: #888; cursor: pointer; font-size: 1.2rem; }
-        .close-modal:hover { color: white; }
     </style>
 </head>
 <body>
-
-    <div id="customAlert" class="custom-popup-overlay">
-        <div class="custom-popup-box">
-            <h3 id="alertTitle" class="custom-popup-title">Notification</h3>
-            <p id="alertMessage" class="custom-popup-msg"></p>
-            <button onclick="closeCustomAlert()" class="custom-popup-btn">OK</button>
-        </div>
-    </div>
-    <div id="customConfirm" class="custom-popup-overlay">
-        <div class="custom-popup-box">
-            <h3 id="confirmTitle" class="custom-popup-title">Confirm</h3>
-            <p id="confirmMessage" class="custom-popup-msg"></p>
-            <div class="custom-popup-actions">
-                <button onclick="closeCustomConfirm(false)" class="custom-popup-btn-cancel">Cancel</button>
-                <button onclick="closeCustomConfirm(true)" class="custom-popup-btn-danger">Yes, Delete</button>
-            </div>
-        </div>
-    </div>
-    <div id="detailsModal" class="custom-popup-overlay">
-        <div class="custom-popup-box details-modal-box">
-            <i class="fa-solid fa-xmark close-modal" onclick="closeDetails()"></i>
-            <h3 id="modalTitle" style="font-size: 1.5rem; font-weight: 700; color: #22d3ee; margin-bottom: 10px;">Note Details</h3>
-            <p id="modalDesc" style="color: #cbd5e1; margin-bottom: 15px; font-size: 0.95rem;"></p>
-            <div id="mapContainer" style="width: 100%; height: 250px; background: rgba(255,255,255,0.05); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #888;"></div>
-            <p id="modalCoord" style="margin-top: 15px; font-size: 0.85rem; color: #94a3b8; font-family: monospace;"></p>
-        </div>
-    </div>
 
     <div class="bg-blob blob-1"></div>
     <div class="bg-blob blob-2"></div>
@@ -112,44 +73,20 @@
     <header class="header">
         <a href="main.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
         <div class="title"><i class="fa-solid fa-vault text-cyan-accent mr-2"></i> Spatial <span>Vault</span></div>
-        <div style="width: 100px;" class="hidden md:block"></div> 
-    </header>
+        <div style="width: 100px;"></div> </header>
 
     <div class="vault-container">
         <div class="vault-header">
             <div>
                 <h1>Your <span>Archive</span></h1>
                 <p style="color: var(--text-muted);">Manage and review all your anchored spatial notes.</p>
-                <div style="color: var(--cyan-accent); font-weight: 600; margin-top: 5px;" id="total-count">Loading Notes...</div>
             </div>
-            <div class="search-box">
-                <i class="fa-solid fa-search"></i>
-                <input type="text" id="search-input" placeholder="Search title or content...">
-            </div>
+            <div style="color: var(--cyan-accent); font-weight: 600;" id="total-count">Loading...</div>
         </div>
-        <div class="notes-grid" id="notes-grid"></div>
+
+        <div class="notes-grid" id="notes-grid">
+            </div>
     </div>
-
-    <script>
-        // Custom Alert/Confirm/Modal Logic
-        window.customAlert = (message, title = "Notification") => { document.getElementById('alertTitle').innerText = title; document.getElementById('alertMessage').innerText = message; document.getElementById('customAlert').style.display = 'flex'; };
-        window.closeCustomAlert = () => document.getElementById('customAlert').style.display = 'none';
-
-        window.customConfirm = (message, title, callback) => { document.getElementById('confirmTitle').innerText = title; document.getElementById('confirmMessage').innerText = message; document.getElementById('customConfirm').style.display = 'flex'; window._confirmCallback = callback; };
-        window.closeCustomConfirm = (result) => { document.getElementById('customConfirm').style.display = 'none'; if (window._confirmCallback) window._confirmCallback(result); };
-
-        window.openDetails = (title, content, lat, lng, x, y, z) => {
-            document.getElementById('modalTitle').innerText = title || "Untitled Note";
-            document.getElementById('modalDesc').innerText = content || "No description provided.";
-            document.getElementById('modalCoord').innerText = `Spatial Anchor: X=${x}, Y=${y}, Z=${z}`;
-            const mapContainer = document.getElementById('mapContainer');
-            if(lat && lng) {
-                mapContainer.innerHTML = `<iframe width="100%" height="250" frameborder="0" style="border-radius:12px; border:none;" src="https://maps.google.com/maps?q=${lat},${lng}&hl=en&z=15&output=embed"></iframe>`;
-            } else { mapContainer.innerHTML = `<div style="text-align:center;"><i class="fa-solid fa-location-crosshairs text-4xl mb-2" style="opacity:0.3"></i><br>No GPS data captured for this note.</div>`; }
-            document.getElementById('detailsModal').style.display = 'flex';
-        };
-        window.closeDetails = () => { document.getElementById('detailsModal').style.display = 'none'; };
-    </script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -157,89 +94,87 @@
         import { getFirestore, collection, query, where, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyDfdbA_iCryNL6JuOkZtSaPH3pEfza_rs0",
-            authDomain: "visinote-66f90.firebaseapp.com",
-            projectId: "visinote-66f90",
-            storageBucket: "visinote-66f90.firebasestorage.app",
-            messagingSenderId: "382835155909",
-            appId: "1:382835155909:web:f7f8f44b85f8cdc1dce1ac"
+            apiKey: "AIzaSyCucq4_5EvxozxTaEk52MTkVyWvv7RqwUg",
+            authDomain: "arcardia-6b034.firebaseapp.com",
+            projectId: "arcardia-6b034",
+            storageBucket: "arcardia-6b034.firebasestorage.app",
+            messagingSenderId: "394979413394",
+            appId: "1:394979413394:web:38cdcad9bc68b8795d854b"
         };
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         
         const grid = document.getElementById('notes-grid');
         const countLabel = document.getElementById('total-count');
-        const searchInput = document.getElementById('search-input');
-        let allNotes = []; 
-
-        function formatDate(timestamp) {
-            if (!timestamp) return 'Unknown Date';
-            return timestamp.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + " • " + timestamp.toDate().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-        }
-
-        function renderNotes(notesToRender) {
-            grid.innerHTML = '';
-            if(notesToRender.length === 0) {
-                grid.innerHTML = `<div class="empty-state"><i class="fa-solid fa-ghost"></i><h3 style="font-size: 1.2rem; color: white; margin-bottom: 5px;">No notes found</h3><p>Try adjusting your search or add new notes in AR Mode.</p></div>`;
-                return;
-            }
-
-            notesToRender.forEach((note, index) => {
-                const dateStr = formatDate(note.timestamp);
-                const x = note.x ? note.x.toFixed(2) : "0.00"; const y = note.y ? note.y.toFixed(2) : "0.00"; const z = note.z ? note.z.toFixed(2) : "0.00";
-                const hasGPS = note.lat && note.lng ? '<i class="fa-solid fa-location-dot" style="color:#22c55e" title="GPS Captured"></i>' : '';
-
-                const card = document.createElement('div');
-                card.className = 'note-card';
-                card.innerHTML = `
-                    <button class="delete-btn" data-id="${note.id}" title="Delete Note"><i class="fa-solid fa-trash"></i></button>
-                    <div class="note-title">${note.title || 'Untitled'} ${hasGPS}</div>
-                    <div class="note-desc">${note.content || 'No description provided.'}</div>
-                    <div class="note-meta"><div class="meta-item"><i class="fa-solid fa-clock"></i> ${dateStr}</div></div>
-                    <button class="details-btn" onclick="openDetails('${(note.title||'').replace(/'/g, "\\'")}', '${(note.content||'').replace(/\n/g, '\\n').replace(/'/g, "\\'")}', ${note.lat || null}, ${note.lng || null}, ${x}, ${y}, ${z})"><i class="fa-solid fa-map-location-dot"></i> View Map Details</button>
-                `;
-                grid.appendChild(card);
-                anime({ targets: card, translateY: [15, 0], opacity: [0, 1], delay: index * 50, duration: 500, easing: 'easeOutQuad' });
-            });
-
-            document.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const id = e.currentTarget.getAttribute('data-id');
-                    customConfirm("Are you sure you want to permanently delete this note?", "Delete Archive", async (confirmed) => {
-                        if(confirmed) {
-                            try {
-                                await deleteDoc(doc(db, "notes", id));
-                                allNotes = allNotes.filter(n => n.id !== id);
-                                countLabel.innerText = `${allNotes.length} Total Notes`;
-                                searchInput.dispatchEvent(new Event('input'));
-                            } catch (error) { customAlert("Failed to delete note.", "Error"); }
-                        }
-                    });
-                });
-            });
-        }
 
         async function fetchVaultNotes(uid) {
             try {
                 const q = query(collection(db, "notes"), where("uid", "==", uid));
                 const snap = await getDocs(q);
-                allNotes = [];
-                snap.forEach(d => allNotes.push({ id: d.id, ...d.data() }));
-                allNotes.sort((a, b) => (b.timestamp?.toMillis() || 0) - (a.timestamp?.toMillis() || 0));
-                countLabel.innerText = `${allNotes.length} Total Notes`;
-                renderNotes(allNotes);
-            } catch (err) { grid.innerHTML = `<div class="empty-state" style="color:#ef4444;"><i class="fa-solid fa-triangle-exclamation"></i> Error loading vault data.</div>`; }
-        }
+                
+                let notes = [];
+                snap.forEach(d => notes.push({ id: d.id, ...d.data() }));
+                
+                // Sort by newest first
+                notes.sort((a, b) => (b.timestamp?.toMillis() || 0) - (a.timestamp?.toMillis() || 0));
 
-        searchInput.addEventListener('input', (e) => {
-            const term = e.target.value.toLowerCase();
-            const filtered = allNotes.filter(note => {
-                const t = (note.title || "").toLowerCase(); const c = (note.content || "").toLowerCase();
-                return t.includes(term) || c.includes(term);
-            });
-            renderNotes(filtered);
-        });
+                countLabel.innerText = `${notes.length} Total Notes`;
+                grid.innerHTML = '';
+
+                if(notes.length === 0) {
+                    grid.innerHTML = `<div style="color:var(--text-muted);">Your vault is empty. Try adding notes in AR Mode!</div>`;
+                    return;
+                }
+
+                notes.forEach((note, index) => {
+                    const dateStr = note.timestamp ? note.timestamp.toDate().toLocaleString() : 'Unknown Date';
+                    const x = note.x ? note.x.toFixed(2) : "0.00";
+                    const y = note.y ? note.y.toFixed(2) : "0.00";
+                    const z = note.z ? note.z.toFixed(2) : "0.00";
+
+                    const card = document.createElement('div');
+                    card.className = 'note-card';
+                    card.innerHTML = `
+                        <button class="delete-btn" data-id="${note.id}" title="Delete Note"><i class="fa-solid fa-trash"></i></button>
+                        <div class="note-title">${note.title || 'Untitled'}</div>
+                        <div class="note-desc">${note.content || 'No description provided.'}</div>
+                        <div class="note-meta">
+                            <div class="meta-item"><i class="fa-solid fa-clock"></i> ${dateStr}</div>
+                            <div class="meta-item"><i class="fa-solid fa-location-crosshairs"></i> Pos: [X: ${x}, Y: ${y}, Z: ${z}]</div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+
+                    // Animate entry
+                    anime({
+                        targets: card,
+                        translateY: [20, 0],
+                        opacity: [0, 1],
+                        delay: index * 100,
+                        duration: 800,
+                        easing: 'easeOutQuart'
+                    });
+                });
+
+                // Attach delete logic
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        if(confirm("Are you sure you want to permanently delete this note?")) {
+                            const id = e.currentTarget.getAttribute('data-id');
+                            await deleteDoc(doc(db, "notes", id));
+                            e.currentTarget.parentElement.style.display = 'none'; // hide immediately
+                            fetchVaultNotes(uid); // refresh count
+                        }
+                    });
+                });
+
+            } catch (err) {
+                console.error(err);
+                grid.innerHTML = `<div style="color:#ef4444;">Error loading vault data.</div>`;
+            }
+        }
 
         onAuthStateChanged(auth, (user) => {
             if (user) fetchVaultNotes(user.uid);
