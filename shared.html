@@ -10,54 +10,86 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
 
     <style>
-        :root { --bg-main: #112d5c; --glass-bg: rgba(255, 255, 255, 0.05); --glass-border: rgba(255, 255, 255, 0.1); --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); --cyan-accent: #0284c7; --cyan-glow: rgba(2, 132, 199, 0.4); --text-main: #f8fafc; --text-muted: #94a3b8; }
-        * { font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; padding: 0; box-sizing: border-box; list-style: none; }
+        :root { 
+            --bg-main: #112d5c; 
+            --glass-bg: rgba(255, 255, 255, 0.05); 
+            --glass-border: rgba(255, 255, 255, 0.1); 
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); 
+            --cyan-accent: #0284c7; 
+            --cyan-glow: rgba(2, 132, 199, 0.4); 
+            --text-main: #f8fafc; 
+            --text-muted: #94a3b8; 
+        }
+        
+        * { font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; padding: 0; box-sizing: border-box; list-style: none; text-decoration: none; }
         body { height: 100vh; background: var(--bg-main); color: var(--text-main); overflow: hidden; display: flex; flex-direction: column; background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px); background-size: 40px 40px; }
         
-        .bg-blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.5; z-index: 0; pointer-events: none; animation: drift alternate infinite ease-in-out; }
-        .blob-1 { width: 500px; height: 500px; background: #0284c7; top: 10%; left: -10%; animation-duration: 20s; }
-        .blob-2 { width: 600px; height: 600px; background: #10b981; bottom: -10%; right: -5%; animation-duration: 25s; animation-delay: -5s; }
+        /* Cyan & Emerald Blobs */
+        .bg-blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.5; z-index: 0; pointer-events: none; animation: drift alternate infinite ease-in-out; } 
+        .blob-1 { width: 500px; height: 500px; background: #0284c7; top: 10%; left: -10%; animation-duration: 20s; } 
+        .blob-2 { width: 600px; height: 600px; background: #10b981; bottom: -10%; right: -5%; animation-duration: 25s; animation-delay: -5s; } 
         @keyframes drift { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(30px, 30px) scale(1.05); } }
 
-        .header { padding: 20px 50px; background: rgba(17, 45, 92, 0.5); backdrop-filter: blur(15px); border-bottom: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center; z-index: 10; }
-        .title { font-size: 1.5rem; font-weight: 800; color: white; }
-        .title span { color: #38bdf8; }
+        .header { padding: 20px 50px; background: rgba(17, 45, 92, 0.5); backdrop-filter: blur(15px); border-bottom: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: space-between; z-index: 10; } 
+        .title { font-size: 1.5rem; font-weight: 800; color: white; } 
+        .title span { color: #10b981; } /* Emerald accent for VisiNote span */
+        .ar-btn { padding: 10px 20px; background: #0284c7; color: white; font-weight: 700; border-radius: 12px; border: none; cursor: pointer; transition: 0.3s; font-size: 0.9rem; text-decoration: none; display: flex; align-items: center; gap: 8px;} 
+        .ar-btn:hover { background: #38bdf8; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4); }
 
-        .vault-container { flex: 1; padding: 40px 8%; overflow-y: auto; z-index: 10; position: relative; }
-        .vault-header { margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 20px; }
-        .vault-header h1 { font-size: 2.5rem; font-weight: 300; }
+        .vault-container { flex: 1; padding: 40px 8%; overflow-y: auto; z-index: 10; position: relative; } 
+        .vault-header { margin-bottom: 30px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 20px; } 
+        .vault-header h1 { font-size: 2.5rem; font-weight: 300; } 
         .vault-header h1 span { font-weight: 700; color: var(--cyan-accent); }
         
-        .search-box { position: relative; width: 100%; max-width: 350px; }
-        .search-box input { width: 100%; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px 15px 12px 45px; color: white; outline: none; transition: 0.3s; }
-        .search-box input:focus { border-color: var(--cyan-accent); box-shadow: 0 0 15px var(--cyan-glow); }
+        .search-box { position: relative; width: 100%; max-width: 350px; } 
+        .search-box input { width: 100%; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px 15px 12px 45px; color: white; outline: none; transition: 0.3s; } 
+        .search-box input:focus { border-color: var(--cyan-accent); box-shadow: 0 0 15px var(--cyan-glow); } 
         .search-box i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
 
-        .notes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; padding-bottom: 50px; }
-        .note-card { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 25px; box-shadow: var(--glass-shadow); display: flex; flex-direction: column; gap: 15px; transition: 0.3s; position: relative; overflow: hidden; }
-        .note-card:hover { transform: translateY(-5px); border-color: rgba(2, 132, 199, 0.4); box-shadow: 0 10px 30px var(--cyan-glow); }
-        .note-title { font-size: 1.2rem; font-weight: 700; color: white; }
-        .note-desc { font-size: 0.95rem; color: #cbd5e1; flex: 1; line-height: 1.5; white-space: pre-wrap; }
-        .note-meta { display: flex; flex-direction: column; gap: 5px; margin-top: 10px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.85rem; color: var(--text-muted); }
-        .meta-item { display: flex; align-items: center; gap: 8px; }
-        .meta-item i { color: var(--cyan-accent); width: 14px; }
+        .notes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; padding-bottom: 50px; } 
+        .note-card { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 25px; box-shadow: var(--glass-shadow); display: flex; flex-direction: column; gap: 15px; transition: 0.3s; position: relative; overflow: hidden; } 
+        .note-card:hover { transform: translateY(-5px); border-color: rgba(2, 132, 199, 0.4); box-shadow: 0 10px 30px var(--cyan-glow); } 
+        .note-title { font-size: 1.2rem; font-weight: 700; color: white; } 
+        .note-desc { font-size: 0.95rem; color: #cbd5e1; flex: 1; line-height: 1.5; white-space: pre-wrap; } 
+        .note-meta { display: flex; flex-direction: column; gap: 5px; margin-top: 10px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.85rem; color: var(--text-muted); } 
+        .meta-item { display: flex; align-items: center; gap: 8px; } 
+        .meta-item i { color: var(--cyan-accent); width: 14px; } 
+        .details-btn { margin-top: 10px; padding: 8px 0; background: transparent; color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; cursor: pointer; transition: 0.3s; font-size: 0.85rem; font-weight: 600; text-align: center; } 
+        .details-btn:hover { background: rgba(56, 189, 248, 0.1); border-color: #38bdf8; }
 
-        .empty-state { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; text-align: center; color: var(--text-muted); }
-        .empty-state i { font-size: 4rem; color: rgba(2, 132, 199, 0.3); margin-bottom: 15px; }
-
-        .vault-container::-webkit-scrollbar { width: 8px; }
+        .empty-state { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; text-align: center; color: var(--text-muted); } 
+        .empty-state i { font-size: 4rem; color: rgba(2, 132, 199, 0.3); margin-bottom: 15px; } 
+        
+        .vault-container::-webkit-scrollbar { width: 8px; } 
         .vault-container::-webkit-scrollbar-thumb { background: rgba(2, 132, 199, 0.5); border-radius: 10px; }
+
+        /* Custom Popups */
+        .custom-popup-overlay { position: fixed; inset: 0; z-index: 100000; display: none; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(8px); padding: 20px; } 
+        .custom-popup-box { background: #0f0f14; border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 35px; max-width: 500px; width: 100%; text-align: left; box-shadow: 0 25px 50px rgba(0,0,0,0.5); color: white; position: relative; } 
+        .close-modal { position: absolute; top: 20px; right: 25px; color: #888; cursor: pointer; font-size: 1.2rem; } 
+        .close-modal:hover { color: white; }
 
         @media (max-width: 768px) { .header { padding: 15px 20px; } .vault-header { flex-direction: column; align-items: flex-start; } .search-box { max-width: 100%; } }
     </style>
 </head>
 <body>
 
+    <div id="detailsModal" class="custom-popup-overlay">
+        <div class="custom-popup-box">
+            <i class="fa-solid fa-xmark close-modal" onclick="closeDetails()"></i>
+            <h3 id="modalTitle" style="font-size: 1.5rem; font-weight: 700; color: #22d3ee; margin-bottom: 10px;">Note Details</h3>
+            <p id="modalDesc" style="color: #cbd5e1; margin-bottom: 15px; font-size: 0.95rem;"></p>
+            <div id="mapContainer" style="width: 100%; height: 250px; background: rgba(255,255,255,0.05); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #888;"></div>
+            <p id="modalCoord" style="margin-top: 15px; font-size: 0.85rem; color: #94a3b8; font-family: monospace;"></p>
+        </div>
+    </div>
+
     <div class="bg-blob blob-1"></div>
     <div class="bg-blob blob-2"></div>
 
     <header class="header">
-        <div class="title"><i class="fa-solid fa-cube text-cyan-accent mr-2"></i> Visi<span>Note</span> Shared Workspace</div>
+        <div class="title"><i class="fa-solid fa-cube text-emerald-500 mr-2"></i> Visi<span>Note</span> Shared Workspace</div>
+        <button id="open-ar-btn" class="ar-btn" style="display:none;"><i class="fa-solid fa-vr-cardboard"></i> View in AR</button>
     </header>
 
     <div class="vault-container">
@@ -75,6 +107,24 @@
 
         <div class="notes-grid" id="notes-grid"></div>
     </div>
+
+    <script>
+        window.openDetails = (title, content, lat, lng, x, y, z) => { 
+            document.getElementById('modalTitle').innerText = title || "Untitled Note"; 
+            document.getElementById('modalDesc').innerText = content || "No description provided."; 
+            document.getElementById('modalCoord').innerText = `Spatial Anchor: X=${x}, Y=${y}, Z=${z}`; 
+            
+            const mapContainer = document.getElementById('mapContainer'); 
+            if(lat && lng) { 
+                mapContainer.innerHTML = `<iframe width="100%" height="250" frameborder="0" style="border-radius:12px; border:none;" src="https://maps.google.com/maps?q=${lat},${lng}&hl=es;z=14&output=embed"></iframe>`; 
+            } else { 
+                mapContainer.innerHTML = `<div style="text-align:center;"><i class="fa-solid fa-location-crosshairs text-4xl mb-2" style="opacity:0.3; color: #10b981;"></i><br>No GPS data captured.</div>`; 
+            } 
+            document.getElementById('detailsModal').style.display = 'flex'; 
+        };
+        
+        window.closeDetails = () => { document.getElementById('detailsModal').style.display = 'none'; };
+    </script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -95,6 +145,7 @@
         const countLabel = document.getElementById('total-count');
         const ownerLabel = document.getElementById('owner-name');
         const searchInput = document.getElementById('search-input');
+        const arBtn = document.getElementById('open-ar-btn');
         let allNotes = []; 
 
         function formatDate(timestamp) {
@@ -115,18 +166,21 @@
                 const x = note.x ? note.x.toFixed(2) : "0.00";
                 const y = note.y ? note.y.toFixed(2) : "0.00";
                 const z = note.z ? note.z.toFixed(2) : "0.00";
+                const hasGPS = note.lat && note.lng ? '<i class="fa-solid fa-location-dot" style="color:#10b981; margin-left: 8px;" title="GPS Captured"></i>' : '';
 
                 const card = document.createElement('div');
                 card.className = 'note-card';
                 
                 // Notice there is NO delete button here! Guests cannot delete.
                 card.innerHTML = `
-                    <div class="note-title">${note.title || 'Untitled'}</div>
+                    <div class="note-title">${note.title || 'Untitled'} ${hasGPS}</div>
                     <div class="note-desc">${note.content || 'No description provided.'}</div>
                     <div class="note-meta">
                         <div class="meta-item"><i class="fa-solid fa-clock"></i> ${dateStr}</div>
-                        <div class="meta-item"><i class="fa-solid fa-location-crosshairs"></i> Pos: [X: ${x}, Y: ${y}, Z: ${z}]</div>
                     </div>
+                    <button class="details-btn" onclick="openDetails('${(note.title||'').replace(/'/g, "\\'")}', '${(note.content||'').replace(/\n/g, '\\n').replace(/'/g, "\\'")}', ${note.lat || null}, ${note.lng || null}, ${x}, ${y}, ${z})">
+                        <i class="fa-solid fa-map-location-dot"></i> View Map Details
+                    </button>
                 `;
                 grid.appendChild(card);
 
@@ -146,8 +200,12 @@
                 return;
             }
 
+            // Enable the AR button and pass the UID
+            arBtn.style.display = "flex"; 
+            arBtn.onclick = () => window.location.href = `shared-ar.html?user=${sharedUid}`;
+
             try {
-                // 2. Fetch the owner's name (optional, will default to "A user's" if missing)
+                // 2. Fetch the owner's name
                 const userSnap = await getDoc(doc(db, "users", sharedUid));
                 if (userSnap.exists()) {
                     const userData = userSnap.data();
