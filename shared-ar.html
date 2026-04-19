@@ -4,23 +4,34 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>AR Camera | Shared Guest</title>
+
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
     
     <script>
-        AFRAME.registerComponent('billboard', { tick: function () { const camera = this.el.sceneEl.camera; if (camera) this.el.object3D.lookAt(camera.position); } });
+        AFRAME.registerComponent('billboard', { 
+            tick: function () { 
+                const camera = this.el.sceneEl.camera; 
+                if (camera) this.el.object3D.lookAt(camera.position); 
+            } 
+        });
     </script>
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
         html, body { background: #000; width: 100%; height: 100%; overflow: hidden; position: fixed; }
-        .arjs-loader { display: none !important; }
-        #arjs-video { position: absolute !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; object-fit: cover !important; z-index: 1 !important; transform: scaleY(1); }
+        
+        .arjs-loader { display: none !important; } 
+        #arjs-video { position: absolute !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; object-fit: cover !important; z-index: 1 !important; transform: scaleY(1); } 
         .a-canvas { z-index: 2 !important; }
-        .status-badge { background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); padding: 8px 20px; border-radius: 30px; border: 1px solid rgba(2, 132, 199, 0.4); color: #22d3ee; font-size: 0.75rem; font-weight: 800; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; pointer-events: auto; }
+        
+        .status-badge { background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); padding: 8px 20px; border-radius: 30px; border: 1px solid rgba(16, 185, 129, 0.4); color: #10b981; font-size: 0.75rem; font-weight: 800; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; pointer-events: auto; }
+        .pulse-dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; animation: pulse 1.5s infinite; } 
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
     </style>
 </head>
 <body>
@@ -31,54 +42,93 @@
     </a-scene>
 
     <div class="absolute inset-0 z-[100] pointer-events-none flex flex-col justify-between">
+        
         <div class="p-6 flex items-start justify-between pointer-events-none">
             <div class="flex items-center gap-4 pointer-events-auto">
-                <button class="w-10 h-10 bg-black/50 border border-white/10 text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-all" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+                <button class="w-10 h-10 bg-black/50 border border-white/10 text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-all" onclick="history.back()">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
                 <div>
                     <h1 class="text-white text-lg font-bold">Guest Spatial View</h1>
                     <p class="text-slate-400 text-xs uppercase tracking-wider font-semibold" id="ownerLabel">Loading...</p>
                 </div>
             </div>
-            <div class="status-badge"><span id="statusText">READ ONLY MODE</span></div>
+            
+            <div class="status-badge">
+                <div class="pulse-dot"></div>
+                <span id="statusText">READ ONLY MODE</span>
+            </div>
         </div>
+        
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-        const firebaseConfig = { apiKey: "AIzaSyDfdbA_iCryNL6JuOkZtSaPH3pEfza_rs0", authDomain: "visinote-66f90.firebaseapp.com", projectId: "visinote-66f90", storageBucket: "visinote-66f90.firebasestorage.app", messagingSenderId: "382835155909", appId: "1:382835155909:web:f7f8f44b85f8cdc1dce1ac" };
-        const app = initializeApp(firebaseConfig);
+        
+        const firebaseConfig = { 
+            apiKey: "AIzaSyDfdbA_iCryNL6JuOkZtSaPH3pEfza_rs0", 
+            authDomain: "visinote-66f90.firebaseapp.com", 
+            projectId: "visinote-66f90", 
+            storageBucket: "visinote-66f90.firebasestorage.app", 
+            messagingSenderId: "382835155909", 
+            appId: "1:382835155909:web:f7f8f44b85f8cdc1dce1ac" 
+        };
+        
+        const app = initializeApp(firebaseConfig); 
         const db = getFirestore(app);
-
-        const urlParams = new URLSearchParams(window.location.search);
+        
+        const urlParams = new URLSearchParams(window.location.search); 
         const sharedUid = urlParams.get('user');
 
-        window.addEventListener('load', () => { setInterval(() => { const arVideo = document.querySelector('video'); if (arVideo && !arVideo.classList.contains('fixed')) { arVideo.classList.add('fixed'); document.body.appendChild(arVideo); } }, 1000); });
+        window.addEventListener('load', () => { 
+            setInterval(() => { 
+                const arVideo = document.querySelector('video'); 
+                if (arVideo && !arVideo.classList.contains('fixed')) { 
+                    arVideo.classList.add('fixed'); 
+                    document.body.appendChild(arVideo); 
+                } 
+            }, 1000); 
+        });
 
         async function loadGuestNotes() {
-            if (!sharedUid) return alert("Invalid URL.");
+            if (!sharedUid) return alert("Invalid sharing link provided.");
+            
             try {
-                // Fetch Name
-                const userSnap = await getDoc(doc(db, "users", sharedUid));
-                if (userSnap.exists()) { document.getElementById('ownerLabel').innerText = `Viewing ${userSnap.data().firstName || "User"}'s Workspace`; }
-                
-                // Fetch Notes
-                const q = query(collection(db, "notes"), where("uid", "==", sharedUid));
-                const snap = await getDocs(q);
+                // Fetch user name
+                const userSnap = await getDoc(doc(db, "users", sharedUid)); 
+                if (userSnap.exists()) { 
+                    document.getElementById('ownerLabel').innerText = `Viewing ${userSnap.data().firstName || "User"}'s Workspace`; 
+                }
+
+                // Fetch notes
+                const q = query(collection(db, "notes"), where("uid", "==", sharedUid)); 
+                const snap = await getDocs(q); 
                 const notesGroup = document.getElementById('notesGroup');
                 
                 snap.forEach((docSnap) => {
-                    const data = docSnap.data();
+                    const data = docSnap.data(); 
                     const el = document.createElement('a-entity');
-                    const posX = typeof data.x === 'number' ? data.x : 0, posY = typeof data.y === 'number' ? data.y : 1.6, posZ = typeof data.z === 'number' ? data.z : -2;
-                    el.setAttribute('position', `${posX} ${posY} ${posZ}`);
+                    
+                    const posX = typeof data.x === 'number' ? data.x : 0;
+                    const posY = typeof data.y === 'number' ? data.y : 1.6;
+                    const posZ = typeof data.z === 'number' ? data.z : -2;
+                    
+                    el.setAttribute('position', `${posX} ${posY} ${posZ}`); 
                     el.setAttribute('billboard', ''); 
-                    el.innerHTML = `<a-plane color="#0f0f14" width="1.4" height="0.8" opacity="0.9"></a-plane><a-plane color="#0284c7" width="1.4" height="0.05" position="0 0.4 0.01"></a-plane><a-text value="${data.title || 'Note'}" align="center" position="0 0.2 0.02" color="#22d3ee" width="3" wrap-count="20"></a-text><a-text value="${data.content || ''}" align="center" position="0 -0.1 0.02" color="#ffffff" width="2.5" wrap-count="25"></a-text>`;
+                    
+                    // Notice we use Emerald green (#10b981) for the border of guest notes
+                    el.innerHTML = `
+                        <a-plane color="#0f0f14" width="1.4" height="0.8" opacity="0.9"></a-plane>
+                        <a-plane color="#10b981" width="1.4" height="0.05" position="0 0.4 0.01"></a-plane>
+                        <a-text value="${data.title || 'Note'}" align="center" position="0 0.2 0.02" color="#22d3ee" width="3" wrap-count="20"></a-text>
+                        <a-text value="${data.content || ''}" align="center" position="0 -0.1 0.02" color="#ffffff" width="2.5" wrap-count="25"></a-text>
+                    `;
                     notesGroup.appendChild(el);
                 });
             } catch (err) { console.error("Error:", err); }
         }
+
         loadGuestNotes();
     </script>
 </body>
