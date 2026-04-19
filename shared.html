@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VisiNote | Shared Workspace</title>
-    
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
@@ -13,7 +12,6 @@
         :root { --bg-main: #112d5c; --glass-bg: rgba(255, 255, 255, 0.05); --glass-border: rgba(255, 255, 255, 0.1); --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); --cyan-accent: #0284c7; --cyan-glow: rgba(2, 132, 199, 0.4); --text-main: #f8fafc; --text-muted: #94a3b8; }
         * { font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; padding: 0; box-sizing: border-box; list-style: none; text-decoration: none; }
         body { height: 100vh; background: var(--bg-main); color: var(--text-main); overflow: hidden; display: flex; flex-direction: column; background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px); background-size: 40px 40px; }
-        
         .bg-blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.5; z-index: 0; pointer-events: none; animation: drift alternate infinite ease-in-out; }
         .blob-1 { width: 500px; height: 500px; background: #0284c7; top: 10%; left: -10%; animation-duration: 20s; }
         .blob-2 { width: 600px; height: 600px; background: #8b5cf6; bottom: -10%; right: -5%; animation-duration: 25s; animation-delay: -5s; }
@@ -22,7 +20,7 @@
         .header { padding: 20px 50px; background: rgba(17, 45, 92, 0.5); backdrop-filter: blur(15px); border-bottom: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: space-between; z-index: 10; }
         .title { font-size: 1.5rem; font-weight: 800; color: white; }
         .title span { color: #38bdf8; }
-        .ar-btn { padding: 10px 20px; background: #0284c7; color: white; font-weight: 700; border-radius: 12px; border: none; cursor: pointer; transition: 0.3s; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;}
+        .ar-btn { padding: 10px 20px; background: #0284c7; color: white; font-weight: 700; border-radius: 12px; border: none; cursor: pointer; transition: 0.3s; font-size: 0.9rem; text-decoration: none; display: flex; align-items: center; gap: 8px;}
         .ar-btn:hover { background: #38bdf8; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4); }
 
         .vault-container { flex: 1; padding: 40px 8%; overflow-y: auto; z-index: 10; position: relative; }
@@ -92,6 +90,7 @@
                 <input type="text" id="search-input" placeholder="Search title or content...">
             </div>
         </div>
+
         <div class="notes-grid" id="notes-grid"></div>
     </div>
 
@@ -102,8 +101,11 @@
             document.getElementById('modalCoord').innerText = `Spatial Anchor: X=${x}, Y=${y}, Z=${z}`;
             const mapContainer = document.getElementById('mapContainer');
             if(lat && lng) {
+                // FIXED GOOGLE MAPS URL
                 mapContainer.innerHTML = `<iframe width="100%" height="250" frameborder="0" style="border-radius:12px; border:none;" src="https://maps.google.com/maps?q=${lat},${lng}&hl=en&z=15&output=embed"></iframe>`;
-            } else { mapContainer.innerHTML = `<div style="text-align:center;"><i class="fa-solid fa-location-crosshairs text-4xl mb-2" style="opacity:0.3"></i><br>No GPS data captured.</div>`; }
+            } else { 
+                mapContainer.innerHTML = `<div style="text-align:center;"><i class="fa-solid fa-location-crosshairs text-4xl mb-2" style="opacity:0.3"></i><br>No GPS data captured.</div>`; 
+            }
             document.getElementById('detailsModal').style.display = 'flex';
         };
         window.closeDetails = () => { document.getElementById('detailsModal').style.display = 'none'; };
