@@ -4,183 +4,299 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>VisiNote | Spatial AR/VR Productivity</title>
-
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <script>
-      tailwind.config = {
-        darkMode: "class",
-        theme: {
-          extend: { colors: { darkBg: "#000000", brandPurple: "#8B5CF6" } },
-        },
-      };
+      tailwind.config = { darkMode: "class", theme: { extend: { colors: { darkBg: "#0a0a0c", brandPurple: "#8B5CF6", brandCyan: "#0284c7" } } } };
     </script>
-
     <style>
-      body { font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; }
-      .scroll-progress { position: fixed; top: 0; left: 0; width: 0%; height: 4px; background: linear-gradient(90deg, #06b6d4, #3b82f6); z-index: 10000; transition: width 0.1s ease; }
-      
-      .purple-gradient-bg {
-        background: radial-gradient(circle at top right, rgba(139, 92, 246, 0.15), transparent),
-                    radial-gradient(circle at bottom left, rgba(76, 29, 149, 0.15), transparent);
-      }
-      .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
-      .feature-card:hover { transform: translateY(-10px); border-color: #8B5CF6; box-shadow: 0 10px 30px -10px rgba(139, 92, 246, 0.3); transition: all 0.3s ease; }
-
-      /* 3D Floating Animations */
-      @keyframes float3D {
-        0%, 100% { transform: perspective(1200px) translateY(0) rotateX(2deg) rotateY(-2deg); }
-        50% { transform: perspective(1200px) translateY(-15px) rotateX(-2deg) rotateY(2deg); }
-      }
-      .animate-float-3d { animation: float3D 6s ease-in-out infinite; }
-
+      :root { --bg-main: #112d5c; --glass-bg: rgba(255, 255, 255, 0.05); --glass-border: rgba(255, 255, 255, 0.1); --cyan-accent: #0284c7; --cyan-glow: rgba(2, 132, 199, 0.4); --text-main: #f8fafc; --text-muted: #94a3b8; }
+      body { font-family: 'Plus Jakarta Sans', sans-serif; overflow-x: hidden; background: var(--bg-main); color: var(--text-main); background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px); background-size: 40px 40px; }
+      .scroll-progress { position: fixed; top: 0; left: 0; width: 0%; height: 4px; background: linear-gradient(90deg, #0284c7, #10b981); z-index: 10000; transition: width 0.1s ease; }
+      .glass-card { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 24px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); }
+      .bg-blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.6; z-index: 0; pointer-events: none; animation: drift alternate infinite ease-in-out; }
+      .blob-1 { width: 600px; height: 600px; background: #0284c7; top: -10%; left: -10%; animation-duration: 25s; }
+      .blob-2 { width: 700px; height: 700px; background: #10b981; bottom: -20%; right: -10%; animation-duration: 28s; animation-delay: -5s; }
+      @keyframes drift { 0% { transform: translate(0px, 0px) scale(1); } 33% { transform: translate(50px, -50px) scale(1.1); } 66% { transform: translate(-40px, 60px) scale(0.9); } 100% { transform: translate(20px, 20px) scale(1.05); } }
+      .vortex-container { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+      .vortex-mist { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 450px; height: 450px; background: radial-gradient(circle, var(--cyan-glow) 0%, transparent 70%); filter: blur(60px); animation: pulse 4s infinite alternate ease-in-out; }
+      .vortex-ring { position: absolute; top: 50%; left: 50%; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.1); transform: translate(-50%, -50%); animation: spin infinite linear; }
+      .vortex-ring::after { content: ''; position: absolute; top: -4px; left: 50%; width: 8px; height: 8px; background: #fff; border-radius: 50%; box-shadow: 0 0 15px 4px var(--cyan-accent); }
+      .ring-1 { width: 200px; height: 200px; animation-duration: 5s; border: 1px dashed rgba(255, 255, 255, 0.3); }
+      .ring-2 { width: 350px; height: 350px; animation-duration: 8s; animation-direction: reverse; }
+      .ring-3 { width: 550px; height: 550px; animation-duration: 12s; border: 1px dashed rgba(255, 255, 255, 0.2); }
+      @keyframes spin { 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+      @keyframes pulse { 0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.5; } 100% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; } }
+      @keyframes float3D { 0%, 100% { transform: perspective(1200px) translateY(0) rotateX(2deg) rotateY(-2deg); } 50% { transform: perspective(1200px) translateY(-15px) rotateX(-2deg) rotateY(2deg); } }
+      .animate-float-3d { animation: float3D 6s ease-in-out infinite; z-index: 20; }
       .btn-3d { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; }
-      .btn-3d:hover { transform: translateY(-4px) translateZ(10px); box-shadow: 0 15px 25px -5px rgba(139, 92, 246, 0.4); }
-
-      /* Background Slideshow */
-      .bg-slide {
-        position: absolute; inset: 0; background-size: cover; background-position: center;
-        opacity: 0; animation: crossfade 15s infinite; transform: scale(1.05); transition: transform 15s linear;
-      }
-      .bg-slide:nth-child(1) { animation-delay: 0s; }
-      .bg-slide:nth-child(2) { animation-delay: 5s; }
-      .bg-slide:nth-child(3) { animation-delay: 10s; }
-      @keyframes crossfade {
-        0% { opacity: 0; transform: scale(1.05); } 10%, 33% { opacity: 1; } 43%, 100% { opacity: 0; transform: scale(1.1); }
-      }
-
-      /* Particles */
-      .particle { position: absolute; background: rgba(6, 182, 212, 0.2); border-radius: 50%; animation: floatY 20s infinite linear; pointer-events: none; }
-      @keyframes floatY {
-          0% { transform: translateY(100vh) scale(0); opacity: 0; }
-          50% { opacity: 0.5; }
-          100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
-      }
+      .btn-3d:hover { transform: translateY(-4px) translateZ(10px); box-shadow: 0 15px 25px -5px rgba(2, 132, 199, 0.5); background: #38bdf8; }
+      #main-navbar { transition: all 0.4s ease; padding-top: 20px; padding-bottom: 20px; }
+      #hero { transition: filter 0.1s linear, opacity 0.1s linear; }
+      .dev-circle { transition: all 0.4s ease; overflow: hidden; position: relative; background: var(--glass-bg); backdrop-filter: blur(10px); border: 2px solid var(--glass-border); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); }
+      .dev-circle img { transition: all 0.5s ease; width: 100%; height: 100%; object-fit: cover; }
+      .dev-circle:hover img { transform: scale(1.1); filter: brightness(0.4) blur(2px); }
+      .dev-info { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: 0.4s ease; z-index: 10; }
+      .dev-circle:hover .dev-info { opacity: 1; }
+      .social-icon-btn { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); cursor: pointer; transition: all 0.3s ease; }
+      .social-icon-btn:hover { background: rgba(2, 132, 199, 0.1); border-color: var(--cyan-accent); color: var(--cyan-accent); transform: translateY(-3px); box-shadow: 0 10px 20px rgba(2, 132, 199, 0.3); }
+      .footer-link { cursor: pointer; transition: all 0.3s ease; display: inline-block; color: var(--text-muted); }
+      .footer-link:hover { color: var(--cyan-accent); transform: translateX(4px); }
+      .custom-popup-overlay { position: fixed; inset: 0; z-index: 100000; display: none; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(8px); padding: 20px; }
+      .custom-popup-box { background: #0f0f14; border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 35px; max-width: 400px; width: 100%; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.5); color: white; }
+      .custom-popup-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 15px; color: #22d3ee; }
+      .custom-popup-msg { font-size: 1rem; color: #cbd5e1; margin-bottom: 30px; line-height: 1.6; }
+      .custom-popup-btn { background: #0284c7; color: white; border: none; padding: 14px 25px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; width: 100%; font-size: 1.05rem; }
+      .custom-popup-btn:hover { background: #38bdf8; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4); }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900 dark:bg-black dark:text-slate-100 relative">
+<body>
+    <div id="customAlert" class="custom-popup-overlay">
+        <div class="custom-popup-box"><h3 id="alertTitle" class="custom-popup-title">Notification</h3><p id="alertMessage" class="custom-popup-msg"></p><button onclick="closeCustomAlert()" class="custom-popup-btn">Got it!</button></div>
+    </div>
     <div class="scroll-progress" id="scrollProgress"></div>
-    <div id="particles-container" class="fixed inset-0 pointer-events-none z-10"></div>
+    <div class="bg-blob blob-1 fixed"></div>
+    <div class="bg-blob blob-2 fixed"></div>
     
-    <nav id="main-navbar" class="fixed top-0 left-0 w-full z-50 transition-all duration-300 bg-transparent py-5 border-b border-transparent">
+    <nav id="main-navbar" class="fixed top-0 left-0 w-full z-50 transition-all duration-500 bg-transparent py-5 border-b border-transparent">
       <div class="w-full px-6 md:px-16 flex items-center justify-between">
-        <div class="flex items-center gap-3 cursor-pointer">
-          <div class="w-11 h-11 bg-purple-600 rounded-[14px] flex items-center justify-center shadow-lg border border-white/10">
-            <i class="fa-solid fa-cube text-white text-[22px]"></i>
-          </div>
-          <span id="nav-brand" class="text-2xl font-bold text-white drop-shadow-md">VisiNote</span>
+        <div class="flex items-center gap-3 cursor-pointer" onclick="window.scrollTo(0,0)">
+          <div class="w-11 h-11 bg-cyan-600 rounded-[14px] flex items-center justify-center shadow-lg shadow-cyan-500/30 border border-white/20"><i class="fa-solid fa-cube text-white text-[22px]"></i></div>
+          <span id="nav-brand" class="text-2xl font-bold text-white drop-shadow-md tracking-tight">VisiNote</span>
         </div>
-        
-        <div id="nav-links" class="hidden md:flex gap-10 font-semibold text-sm text-slate-100 drop-shadow-md">
-          <a href="#home" class="hover:text-purple-400 transition-colors">Home</a>
-          <a href="#features" class="hover:text-purple-400 transition-colors">Features</a>
-          <button onclick="document.documentElement.classList.toggle('dark')" class="hover:text-purple-400 transition-colors"><i class="fa-solid fa-moon"></i></button>
-        </div>
-
-        <button onclick="window.location.href='loginPage.html'" class="bg-purple-600 text-white px-8 py-3 rounded-full font-bold btn-3d border border-purple-400/30">
-          Login / Get Started
-        </button>
+        <button onclick="window.location.href='loginPage.html'" class="bg-cyan-600 text-white px-8 py-3 rounded-full font-bold btn-3d shadow-lg shadow-cyan-600/30 border border-cyan-400/30">Enter Workspace</button>
       </div>
     </nav>
 
-    <section id="home" class="relative min-h-screen flex flex-col items-center justify-center pt-20 overflow-hidden bg-black">
-      <div class="absolute inset-0 z-0">
-        <div class="bg-slide" style="background-image: url('https://images.unsplash.com/photo-1517842645767-c639042777db?auto=format&fit=crop&q=80&w=2000');"></div>
-        <div class="bg-slide" style="background-image: url('https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&q=80&w=2000');"></div>
-        <div class="bg-slide" style="background-image: url('https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=2000');"></div>
-        <div class="absolute inset-0 bg-black/50 z-10"></div>
-      </div>
-
+    <section id="hero" class="relative min-h-screen flex flex-col items-center justify-center pt-20 overflow-hidden">
+      <div class="vortex-container"><div class="vortex-mist"></div><div class="vortex-ring ring-1"></div><div class="vortex-ring ring-2"></div><div class="vortex-ring ring-3"></div></div>
       <div class="text-center z-20 px-4 w-full max-w-5xl mx-auto relative flex flex-col items-center">
-        <div class="absolute top-10 md:top-20 -left-4 md:-left-10 bg-yellow-400 p-4 shadow-[0_20px_40px_rgba(0,0,0,0.5)] w-32 h-32 -rotate-6 hidden sm:block rounded-sm animate-float-3d" style="animation-delay: 0s;">
-          <p class="text-xs font-bold text-yellow-900">Buy groceries 🛒</p>
-        </div>
-        <div class="absolute bottom-10 md:bottom-20 -right-4 md:-right-10 bg-cyan-400 p-4 shadow-[0_20px_40px_rgba(0,0,0,0.5)] w-32 h-32 rotate-12 hidden sm:block rounded-sm animate-float-3d" style="animation-delay: 1.5s">
-          <p class="text-xs font-bold text-cyan-900">VR Meeting 🚀</p>
-        </div>
-
-        <span data-aos="fade-down" class="bg-white/20 text-white px-5 py-2 rounded-full text-sm font-bold tracking-widest mb-6 inline-block uppercase backdrop-blur-md border border-white/30 shadow-lg">The Future of Spatial Work</span>
-        <h1 data-aos="fade-up" class="text-5xl md:text-8xl font-extrabold tracking-tighter mb-6 text-white drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)]">
-          The World Is <br /> Your Canvas
-        </h1>
-        <p data-aos="fade-up" data-aos-delay="200" class="text-xl text-slate-200 max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
-          Point your camera at any surface and anchor digital notes in physical space. Transform your environment into a collaborative smart workspace.
-        </p>
-        <button onclick="window.location.href='loginPage.html'" class="px-8 py-4 bg-purple-600 text-white rounded-2xl font-bold text-lg btn-3d" data-aos="fade-up" data-aos-delay="300">
-          Create Free Account
-        </button>
+        <div class="absolute top-10 md:top-20 -left-4 md:-left-10 bg-white/5 backdrop-blur-md border border-white/10 p-5 shadow-[0_20px_40px_rgba(0,0,0,0.5)] w-40 h-40 -rotate-6 hidden sm:flex flex-col justify-center items-center rounded-2xl animate-float-3d" style="animation-delay: 0s;"><i class="fa-solid fa-cart-shopping text-3xl text-cyan-400 mb-3"></i><p class="text-sm font-bold text-white text-center">Buy Groceries</p></div>
+        <div class="absolute bottom-10 md:bottom-20 -right-4 md:-right-10 bg-white/5 backdrop-blur-md border border-white/10 p-5 shadow-[0_20px_40px_rgba(0,0,0,0.5)] w-40 h-40 rotate-12 hidden sm:flex flex-col justify-center items-center rounded-2xl animate-float-3d" style="animation-delay: 1.5s;"><i class="fa-solid fa-headset text-3xl text-emerald-400 mb-3"></i><p class="text-sm font-bold text-white text-center">VR Meeting @ 3PM</p></div>
+        <span data-aos="fade-down" class="bg-cyan-900/30 text-cyan-400 border border-cyan-400/30 px-6 py-2.5 rounded-full text-sm font-bold tracking-widest mb-8 inline-block uppercase backdrop-blur-md shadow-[0_0_20px_rgba(2,132,199,0.3)]">The Future of Spatial Computing</span>
+        <h1 data-aos="fade-up" class="text-5xl md:text-[5.5rem] leading-tight font-extrabold tracking-tighter mb-6 text-white drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)]">The World Is <br /> <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-emerald-500">Your Canvas</span></h1>
+        <p data-aos="fade-up" data-aos-delay="200" class="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto mb-10 leading-relaxed font-medium drop-shadow-md">Anchor your digital workflow seamlessly to the physical world. VisiNote leverages advanced spatial intelligence to overlay persistent, location-aware holographic notes precisely where you need them.</p>
       </div>
     </section>
 
-    <section id="features" class="py-24 bg-darkBg border-y border-zinc-800 purple-gradient-bg relative z-20">
-      <div class="max-w-7xl mx-auto px-6">
-        <h2 class="text-4xl font-bold dark:text-white mb-16 text-center" data-aos="fade-up">Powerful Features</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div class="p-8 rounded-3xl bg-zinc-900/50 border border-zinc-800 feature-card" data-aos="zoom-in">
-            <i class="fa-solid fa-vr-cardboard text-3xl text-purple-500 mb-6 group-hover:scale-110 transition-transform"></i>
-            <h4 class="text-xl font-bold mb-3 dark:text-white">AR Camera Integration</h4>
-            <p class="text-slate-400 text-sm">Overlay digital data onto the physical world with precision.</p>
-          </div>
-          <div class="p-8 rounded-3xl bg-zinc-900/50 border border-zinc-800 feature-card" data-aos="zoom-in" data-aos-delay="100">
-            <i class="fa-solid fa-cloud text-3xl text-purple-500 mb-6 group-hover:scale-110 transition-transform"></i>
-            <h4 class="text-xl font-bold mb-3 dark:text-white">Cloud Sync</h4>
-            <p class="text-slate-400 text-sm">Instantly save your spatial anchors to your Firebase vault.</p>
-          </div>
-          <div class="p-8 rounded-3xl bg-zinc-900/50 border border-zinc-800 feature-card" data-aos="zoom-in" data-aos-delay="200">
-            <i class="fa-solid fa-chart-line text-3xl text-purple-500 mb-6 group-hover:scale-110 transition-transform"></i>
-            <h4 class="text-xl font-bold mb-3 dark:text-white">Dashboard Management</h4>
-            <p class="text-slate-400 text-sm">Manage all your captured data from a centralized hub.</p>
-          </div>
+    <section id="features" class="py-24 relative z-20 bg-gradient-to-b from-transparent to-black/40 backdrop-blur-lg border-b border-white/5">
+      <div class="max-w-6xl mx-auto px-6">
+        <div class="flex flex-col md:flex-row items-center gap-12 lg:gap-20 mb-32" data-aos="fade-up">
+            <div class="md:w-1/2">
+                <h3 class="text-4xl md:text-5xl font-bold text-white mb-6 tracking-tight">AR Camera <br><span class="text-cyan-400">Integration</span></h3>
+                <p class="text-lg text-slate-300 leading-relaxed">Turn your smartphone into a spatial lens. Our high-performance AR engine flawlessly maps your physical environment, allowing you to anchor interactive 3D notes, holographic blueprints, and daily tasks directly onto the walls, desks, and objects around you with pinpoint millimeter accuracy.</p>
+            </div>
+            <div class="md:w-1/2 flex justify-center w-full">
+                <div class="w-3/4 md:w-2/3 lg:w-1/2 aspect-square glass-card flex items-center justify-center bg-gradient-to-br from-cyan-900/40 to-black overflow-hidden relative group">
+                    <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1617802690992-15d93263d3a9?auto=format&fit=crop&q=80&w=800')] bg-cover bg-center opacity-20 mix-blend-overlay group-hover:scale-110 transition-transform duration-700"></div>
+                    <i class="fa-solid fa-vr-cardboard text-[2.25rem] text-cyan-400 drop-shadow-[0_0_40px_rgba(34,211,238,0.6)] group-hover:scale-110 transition-transform duration-500 relative z-10"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row-reverse items-center gap-12 lg:gap-20 mb-32" data-aos="fade-up">
+            <div class="md:w-1/2">
+                <h3 class="text-4xl md:text-5xl font-bold text-white mb-6 tracking-tight">Cloud <br><span class="text-emerald-400">Scan</span></h3>
+                <p class="text-lg text-slate-300 leading-relaxed">Your augmented reality is synced instantly across the globe. Scan your environment to securely encrypt and back up every holographic anchor to our lightning-fast Firebase cloud infrastructure. Whether you switch devices or share your workspace, your environment loads exactly as you left it.</p>
+            </div>
+            <div class="md:w-1/2 flex justify-center w-full">
+                <div class="w-3/4 md:w-2/3 lg:w-1/2 aspect-square glass-card flex items-center justify-center bg-gradient-to-bl from-emerald-900/40 to-black overflow-hidden relative group">
+                    <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800')] bg-cover bg-center opacity-20 mix-blend-overlay group-hover:scale-110 transition-transform duration-700"></div>
+                    <i class="fa-solid fa-cloud text-[2.25rem] text-emerald-400 drop-shadow-[0_0_40px_rgba(139,92,246,0.6)] group-hover:scale-110 transition-transform duration-500 relative z-10"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row items-center gap-12 lg:gap-20 mb-32" data-aos="fade-up">
+            <div class="md:w-1/2">
+                <h3 class="text-4xl md:text-5xl font-bold text-white mb-6 tracking-tight">Dashboard <br><span class="text-blue-400">Management</span></h3>
+                <p class="text-lg text-slate-300 leading-relaxed">Take control through our beautifully crafted, glassmorphic web dashboard. Manage your floating sticky notes, track your GPS-anchored physical locations seamlessly via Google Maps integrations, and generate secure sharing links for seamless real-time collaboration.</p>
+            </div>
+            <div class="md:w-1/2 flex justify-center w-full">
+                <div class="w-3/4 md:w-2/3 lg:w-1/2 aspect-square glass-card flex items-center justify-center bg-gradient-to-br from-blue-900/40 to-black overflow-hidden relative group">
+                    <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800')] bg-cover bg-center opacity-20 mix-blend-overlay group-hover:scale-110 transition-transform duration-700"></div>
+                    <i class="fa-solid fa-chart-line text-[2.25rem] text-blue-400 drop-shadow-[0_0_40px_rgba(59,130,246,0.6)] group-hover:scale-110 transition-transform duration-500 relative z-10"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row-reverse items-center gap-12 lg:gap-20" data-aos="fade-up">
+            <div class="md:w-1/2">
+                <h3 class="text-4xl md:text-5xl font-bold text-white mb-6 tracking-tight">Interactive <br>Notes <span class="text-purple-400">Vault</span></h3>
+                <p class="text-lg text-slate-300 leading-relaxed">Store, search, and retrieve all your spatial memories in a secure digital vault. Easily filter through your notes, review their exact physical coordinates, and jump straight back into the AR viewer to see your holographic data exactly where you left it.</p>
+            </div>
+            <div class="md:w-1/2 flex justify-center w-full">
+                <div class="w-3/4 md:w-2/3 lg:w-1/2 aspect-square glass-card flex items-center justify-center bg-gradient-to-bl from-purple-900/40 to-black overflow-hidden relative group">
+                    <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1555949963-aa79dcee981c?auto=format&fit=crop&q=80&w=800')] bg-cover bg-center opacity-20 mix-blend-overlay group-hover:scale-110 transition-transform duration-700"></div>
+                    <i class="fa-solid fa-vault text-[2.25rem] text-purple-400 drop-shadow-[0_0_40px_rgba(139,92,246,0.6)] group-hover:scale-110 transition-transform duration-500 relative z-10"></i>
+                </div>
+            </div>
         </div>
       </div>
     </section>
+
+    <section class="py-24 relative z-20 bg-black">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="text-center mb-12" data-aos="fade-up">
+                <h2 class="text-3xl font-bold text-white mb-3">Experience The Future</h2>
+                <p class="text-slate-400">See VisiNote's augmented reality engine in real-time action.</p>
+            </div>
+            <div class="aspect-video w-full rounded-[32px] border border-white/10 bg-zinc-900 shadow-[0_0_80px_rgba(2,132,199,0.2)] flex flex-col items-center justify-center relative overflow-hidden group" data-aos="zoom-in" data-aos-delay="100">
+                <video autoplay loop muted playsinline class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 opacity-90">
+                    <source src="intro.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none"></div>
+                <div class="absolute bottom-8 left-8 z-10 flex items-center gap-4">
+                    <div class="w-3 h-3 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_#10b981]"></div>
+                    <span class="text-white font-bold tracking-widest text-sm uppercase drop-shadow-md">Live AR Simulation</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-24 relative z-20 bg-black/60 backdrop-blur-lg border-t border-white/5">
+        <div class="max-w-6xl mx-auto px-6 text-center">
+            <div class="mb-16" data-aos="fade-up">
+                <h2 class="text-4xl font-extrabold text-white mb-4">Meet The Architects</h2>
+                <div class="w-24 h-1 bg-emerald-500 mx-auto rounded-full"></div>
+            </div>
+            <div class="flex flex-wrap justify-center gap-12 lg:gap-24">
+                <div class="flex flex-col items-center group" data-aos="fade-up" data-aos-delay="0">
+                    <div class="dev-circle w-52 h-52 rounded-full border border-white/10 group-hover:border-cyan-400 mb-6 cursor-pointer" onclick="triggerActiveAlert('Connecting to Deepanshu\'s professional network...', 'Developer Linked')">
+                        <img src="https://ui-avatars.com/api/?name=Deepanshu&background=0284c7&color=fff&size=256" alt="Deepanshu">
+                        <div class="dev-info bg-black/70 backdrop-blur-md">
+                            <i class="fa-brands fa-linkedin text-3xl text-cyan-400 mb-2"></i>
+                            <span class="text-xs text-white uppercase tracking-widest font-bold">Connect</span>
+                        </div>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-1">Deepanshu</h3>
+                    <p class="text-cyan-400 font-bold text-sm tracking-wide uppercase mb-1">Senior Developer</p>
+                    <p class="text-slate-500 text-sm">UI/UX</p>
+                </div>
+                <div class="flex flex-col items-center group" data-aos="fade-up" data-aos-delay="100">
+                    <div class="dev-circle w-52 h-52 rounded-full border border-white/10 group-hover:border-emerald-400 mb-6 cursor-pointer" onclick="triggerActiveAlert('Opening Anil\'s GitHub Repositories...', 'Developer Linked')">
+                        <img src="https://ui-avatars.com/api/?name=Anil&background=10b981&color=fff&size=256" alt="Anil">
+                        <div class="dev-info bg-black/70 backdrop-blur-md">
+                            <i class="fa-brands fa-github text-3xl text-emerald-400 mb-2"></i>
+                            <span class="text-xs text-white uppercase tracking-widest font-bold">GitHub</span>
+                        </div>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-1">Anil</h3>
+                    <p class="text-emerald-400 font-bold text-sm tracking-wide uppercase mb-1">Database Handler</p>
+                    <p class="text-slate-500 text-sm">Firebase</p>
+                </div>
+                <div class="flex flex-col items-center group" data-aos="fade-up" data-aos-delay="200">
+                    <div class="dev-circle w-52 h-52 rounded-full border border-white/10 group-hover:border-blue-400 mb-6 cursor-pointer" onclick="triggerActiveAlert('Initializing contact protocol for Dipesh...', 'Developer Linked')">
+                        <img src="https://ui-avatars.com/api/?name=Dipesh&background=3b82f6&color=fff&size=256" alt="Dipesh">
+                        <div class="dev-info bg-black/70 backdrop-blur-md">
+                            <i class="fa-solid fa-envelope text-3xl text-blue-400 mb-2"></i>
+                            <span class="text-xs text-white uppercase tracking-widest font-bold">Contact</span>
+                        </div>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white mb-1">Dipesh</h3>
+                    <p class="text-blue-400 font-bold text-sm tracking-wide uppercase mb-1">Backend Developer</p>
+                    <p class="text-slate-500 text-sm">System Logic</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-20 bg-gradient-to-b from-transparent to-black relative z-20">
+        <div class="max-w-4xl mx-auto px-6 text-center glass-card p-12 border-none shadow-2xl" data-aos="zoom-in">
+            <i class="fa-solid fa-quote-left text-4xl text-white/10 mb-6"></i>
+            <h3 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-emerald-400 mb-6">Redefining Digital Interaction</h3>
+            <p class="text-lg text-slate-300 leading-relaxed font-medium">
+                VisiNote was born from a singular vision: to destroy the boundary between the digital workspace and the physical environment. By harnessing cutting-edge WebAR protocols and real-time cloud synchronization, our team has created a platform where your ideas are no longer trapped behind a 2D monitor. 
+                <br><br>
+                Pin your brainstorming sessions to the office whiteboard, leave spatial reminders on the fridge, and share your holographic universe with collaborators worldwide.
+            </p>
+        </div>
+    </section>
+
+    <footer class="bg-[#050508] pt-20 pb-8 relative z-30 overflow-hidden">
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[1px] bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-60 shadow-[0_0_20px_rgba(2,132,199,0.8)]"></div>
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-16">
+            <div class="lg:col-span-2">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-10 h-10 bg-cyan-600 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-500/30 border border-white/20"><i class="fa-solid fa-cube text-white text-xl"></i></div>
+                    <span class="text-2xl font-bold text-white tracking-tight">VisiNote</span>
+                </div>
+                <p class="text-slate-400 mb-8 leading-relaxed pr-4 font-medium">Pioneering the next generation of spatial productivity. Transform your physical environment into a boundless digital workspace.</p>
+                <form class="flex relative w-full max-w-sm" onsubmit="event.preventDefault(); triggerActiveAlert('Thank you for subscribing! Welcome to the spatial revolution.', 'Subscription Confirmed');">
+                    <input type="email" placeholder="Enter email for updates" class="w-full bg-white/5 border border-white/10 rounded-full py-3.5 px-6 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all shadow-inner" required>
+                    <button type="submit" class="absolute right-1.5 top-1.5 bottom-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-full px-6 font-bold tracking-wide transition-all shadow-lg shadow-cyan-600/30">Join</button>
+                </form>
+            </div>
+            <div>
+                <h4 class="text-white font-bold mb-6 tracking-wider uppercase text-sm border-b border-white/10 pb-3">About</h4>
+                <ul class="space-y-3 font-medium">
+                    <li><span class="footer-link" onclick="triggerActiveAlert('Our story section is currently being updated with our latest milestones.', 'Page Loading')">Our Story</span></li>
+                    <li><span class="footer-link" onclick="window.scrollTo({top: document.getElementById('features').offsetTop, behavior: 'smooth'})">Features</span></li>
+                    <li><span class="footer-link" onclick="triggerActiveAlert('We are not currently hiring, but check back soon!', 'Careers')">Careers</span></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-white font-bold mb-6 tracking-wider uppercase text-sm border-b border-white/10 pb-3">Platform</h4>
+                <ul class="space-y-3 font-medium">
+                    <li><a href="ar-camera.html" class="footer-link">AR Camera Engine</a></li>
+                    <li><a href="vault.html" class="footer-link">Secure Cloud Vault</a></li>
+                    <li><a href="main.html" class="footer-link">User Dashboard</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-white font-bold mb-6 tracking-wider uppercase text-sm border-b border-white/10 pb-3">Connect</h4>
+                <ul class="space-y-3 font-medium mb-6">
+                    <li><span class="footer-link" onclick="triggerActiveAlert('Documentation portal is initializing...', 'Docs')">Documentation</span></li>
+                    <li><span class="footer-link" onclick="triggerActiveAlert('API keys and developer endpoints are restricted to Pro users.', 'API Restricted')">API Reference</span></li>
+                </ul>
+                <div class="flex gap-3">
+                    <button class="social-icon-btn" onclick="triggerActiveAlert('Routing to Twitter/X profile...', 'Social Redirect')"><i class="fa-brands fa-twitter text-lg"></i></button>
+                    <button class="social-icon-btn" onclick="triggerActiveAlert('Launching Discord Community Server...', 'Social Redirect')"><i class="fa-brands fa-discord text-lg"></i></button>
+                    <button class="social-icon-btn" onclick="triggerActiveAlert('Opening default mail client for support@visinote.app...', 'Contact Support')"><i class="fa-solid fa-envelope text-lg"></i></button>
+                </div>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto px-6 pt-6 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="text-slate-500 text-sm font-medium tracking-wide">&copy; 2026 VisiNote Spatial Inc. All rights reserved.</div>
+            <div class="flex gap-6 text-sm text-slate-500 font-medium">
+                <span class="hover:text-cyan-400 cursor-pointer transition-colors" onclick="triggerActiveAlert('Your data is encrypted end-to-end.', 'Privacy Verified')">Privacy Policy</span>
+                <span class="hover:text-cyan-400 cursor-pointer transition-colors" onclick="triggerActiveAlert('Terms of Service loading...', 'Terms')">Terms of Service</span>
+                <span class="hover:text-cyan-400 cursor-pointer transition-colors" onclick="triggerActiveAlert('Cookie tracking is essential only.', 'Cookies')">Cookies</span>
+            </div>
+        </div>
+    </footer>
 
     <script>
-      // Initialize Scroll Animations
       AOS.init({ duration: 1000, once: true });
-
-      // Create Floating Particles
       const particleContainer = document.getElementById('particles-container');
       const particleCount = window.innerWidth < 768 ? 10 : 25;
       for (let i = 0; i < particleCount; i++) {
           const p = document.createElement('div');
           p.className = 'particle';
-          p.style.left = Math.random() * 100 + 'vw';
-          p.style.width = p.style.height = Math.random() * 10 + 5 + 'px';
-          p.style.animationDelay = Math.random() * 5 + 's';
-          p.style.opacity = Math.random() * 0.5;
+          p.style.left = Math.random() * 100 + 'vw'; p.style.width = p.style.height = Math.random() * 10 + 5 + 'px';
+          p.style.animationDelay = Math.random() * 5 + 's'; p.style.opacity = Math.random() * 0.5;
           particleContainer.appendChild(p);
       }
-
-      // Scroll Progress & Navbar styling
+      window.triggerActiveAlert = (message, title = "System Action") => { 
+          document.getElementById('alertTitle').innerText = title; document.getElementById('alertMessage').innerText = message; document.getElementById('customAlert').style.display = 'flex'; 
+          anime({ targets: '.custom-popup-box', scale: [0.9, 1], opacity: [0, 1], duration: 400, easing: 'easeOutBack' });
+      };
+      window.closeCustomAlert = () => { 
+          anime({ targets: '.custom-popup-box', scale: [1, 0.9], opacity: [1, 0], duration: 300, easing: 'easeInBack', complete: function() { document.getElementById('customAlert').style.display = 'none'; } });
+      };
       window.addEventListener('scroll', () => {
         let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
         let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
         document.getElementById("scrollProgress").style.width = (winScroll / height) * 100 + "%";
-
-        const navbar = document.getElementById('main-navbar');
-        const navBrand = document.getElementById('nav-brand');
-        const navLinks = document.getElementById('nav-links');
-
-        if (window.scrollY > 20) {
-          navbar.classList.add('bg-white/90', 'dark:bg-[#0a0a0a]/90', 'backdrop-blur-xl', 'shadow-sm', 'border-slate-200', 'dark:border-zinc-800');
-          navbar.classList.remove('bg-transparent', 'border-transparent');
-          navBrand.classList.replace('text-white', 'dark:text-white');
-          navBrand.classList.add('text-slate-900');
-          navLinks.classList.replace('text-slate-100', 'dark:text-slate-300');
-          navLinks.classList.add('text-slate-700');
-        } else {
-          navbar.classList.remove('bg-white/90', 'dark:bg-[#0a0a0a]/90', 'backdrop-blur-xl', 'shadow-sm', 'border-slate-200', 'dark:border-zinc-800');
-          navbar.classList.add('bg-transparent', 'border-transparent');
-          navBrand.classList.replace('dark:text-white', 'text-white');
-          navBrand.classList.remove('text-slate-900');
-          navLinks.classList.replace('dark:text-slate-300', 'text-slate-100');
-          navLinks.classList.remove('text-slate-700');
-        }
+        const navbar = document.getElementById('main-navbar'), hero = document.getElementById('hero');
+        const blurAmount = winScroll / 30; const opacityAmount = 1 - (winScroll / 600);
+        if (winScroll > 10) { hero.style.filter = `blur(${blurAmount}px)`; hero.style.opacity = opacityAmount; } else { hero.style.filter = "blur(0px)"; hero.style.opacity = 1; }
+        if (winScroll > 20) { navbar.classList.add('bg-[#050508]/90', 'backdrop-blur-xl', 'shadow-[0_10px_30px_rgba(0,0,0,0.5)]', 'border-white/10'); navbar.classList.remove('bg-transparent', 'border-transparent'); navbar.style.paddingTop = "15px"; navbar.style.paddingBottom = "15px"; } else { navbar.classList.remove('bg-[#050508]/90', 'backdrop-blur-xl', 'shadow-[0_10px_30px_rgba(0,0,0,0.5)]', 'border-white/10'); navbar.classList.add('bg-transparent', 'border-transparent'); navbar.style.paddingTop = "20px"; navbar.style.paddingBottom = "20px"; }
       });
     </script>
 </body>
