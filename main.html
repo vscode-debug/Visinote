@@ -8,114 +8,51 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-
     <style>
         :root { --bg-main: #112d5c; --glass-bg: rgba(255, 255, 255, 0.05); --glass-border: rgba(255, 255, 255, 0.1); --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); --cyan-accent: #0284c7; --cyan-glow: rgba(2, 132, 199, 0.4); --text-main: #f8fafc; --text-muted: #94a3b8; }
         * { font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; padding: 0; box-sizing: border-box; text-decoration: none; list-style: none; }
         .dashboard-bg { background-color: var(--bg-main); background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px); background-size: 40px 40px; }
-        
         .bg-blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.6; z-index: 0; pointer-events: none; animation: drift alternate infinite ease-in-out; }
-        .blob-1 { width: 600px; height: 600px; background: #0284c7; top: -10%; left: -10%; animation-duration: 25s; }
-        .blob-2 { width: 700px; height: 700px; background: #8b5cf6; bottom: -20%; right: -10%; animation-duration: 28s; animation-delay: -5s; }
+        .blob-1 { width: 600px; height: 600px; background: #0284c7; top: -10%; left: -10%; animation-duration: 25s; } .blob-2 { width: 700px; height: 700px; background: #10b981; bottom: -20%; right: -10%; animation-duration: 28s; animation-delay: -5s; }
         @keyframes drift { 0% { transform: translate(0px, 0px) scale(1); } 33% { transform: translate(50px, -50px) scale(1.1); } 66% { transform: translate(-40px, 60px) scale(0.9); } 100% { transform: translate(20px, 20px) scale(1.05); } }
-
-        .search-container { position: relative; display: flex; align-items: center; }
-        .search-input { width: 40px; height: 40px; border-radius: 20px; border: 1px solid transparent; background: transparent; padding: 0 15px 0 40px; color: var(--text-main); font-size: 14px; transition: all 0.4s ease; cursor: pointer; }
-        .search-input:focus, .search-container:hover .search-input { width: 250px; background: var(--glass-bg); border: 1px solid var(--glass-border); cursor: text; box-shadow: inset 0 0 10px rgba(0,0,0,0.1); }
-        .search-icon { position: absolute; left: 12px; color: var(--text-muted); pointer-events: none; transition: color 0.3s; }
-        .search-input:focus ~ .search-icon, .search-container:hover .search-icon { color: var(--cyan-accent); }
-
+        .search-container { position: relative; display: flex; align-items: center; } .search-input { width: 40px; height: 40px; border-radius: 20px; border: 1px solid transparent; background: transparent; padding: 0 15px 0 40px; color: var(--text-main); font-size: 14px; transition: all 0.4s ease; cursor: pointer; } .search-input:focus, .search-container:hover .search-input { width: 250px; background: var(--glass-bg); border: 1px solid var(--glass-border); cursor: text; box-shadow: inset 0 0 10px rgba(0,0,0,0.1); } .search-icon { position: absolute; left: 12px; color: var(--text-muted); pointer-events: none; transition: color 0.3s; } .search-input:focus ~ .search-icon, .search-container:hover .search-icon { color: var(--cyan-accent); }
         .glass-card { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 24px; padding: 30px; box-shadow: var(--glass-shadow); position: relative; display: flex; flex-direction: column; }
-        .recent-notes-list::-webkit-scrollbar { width: 6px; }
-        .recent-notes-list::-webkit-scrollbar-thumb { background: rgba(2, 132, 199, 0.5); border-radius: 10px; }
-        .note-item { padding: 15px; background: rgba(255, 255, 255, 0.03); border-radius: 12px; border: 1px solid transparent; transition: all 0.3s; cursor: pointer; }
-        .note-item:hover { border-color: var(--cyan-accent); background: rgba(2, 132, 199, 0.1); transform: translateX(5px); }
-
-        .add-note-btn { background: var(--cyan-accent); box-shadow: 0 4px 15px var(--cyan-glow); transition: all 0.3s; }
-        .add-note-btn:hover { transform: translateY(-3px); background: #38bdf8; box-shadow: 0 6px 20px var(--cyan-glow); }
+        .recent-notes-list::-webkit-scrollbar { width: 6px; } .recent-notes-list::-webkit-scrollbar-thumb { background: rgba(2, 132, 199, 0.5); border-radius: 10px; } .note-item { padding: 15px; background: rgba(255, 255, 255, 0.03); border-radius: 12px; border: 1px solid transparent; transition: all 0.3s; cursor: pointer; } .note-item:hover { border-color: var(--cyan-accent); background: rgba(2, 132, 199, 0.1); transform: translateX(5px); }
+        .add-note-btn { background: var(--cyan-accent); box-shadow: 0 4px 15px var(--cyan-glow); transition: all 0.3s; } .add-note-btn:hover { transform: translateY(-3px); background: #38bdf8; box-shadow: 0 6px 20px var(--cyan-glow); }
         .total-number { font-size: 5.5rem; font-weight: 800; background: linear-gradient(135deg, #fff, #38bdf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; }
-
-        .bottom-dock { background: rgba(10, 25, 50, 0.85); backdrop-filter: blur(25px); border: 1px solid var(--glass-border); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5); }
-        .dock-item { transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .dock-item:hover i { background: var(--cyan-accent); transform: translateY(-8px) scale(1.1); box-shadow: 0 10px 20px var(--cyan-glow); color: white; }
-        .dock-item.exit:hover i { background: #ef4444; box-shadow: 0 10px 20px rgba(239, 68, 68, 0.4); }
-
-        #globalNoteModal { display: none; position: fixed; inset: 0; z-index: 9999; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); backdrop-filter: blur(12px); padding: 20px; }
-        .modal-input:focus, .modal-textarea:focus { border-color: var(--cyan-accent); }
-
-        /* CUSTOM POPUPS */
-        .custom-popup-overlay { position: fixed; inset: 0; z-index: 100000; display: none; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(8px); padding: 20px; }
-        .custom-popup-box { background: #0f0f14; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 30px; max-width: 400px; width: 100%; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); color: white; font-family: 'Plus Jakarta Sans', sans-serif; }
-        .custom-popup-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; color: #22d3ee; }
-        .custom-popup-msg { font-size: 0.95rem; color: #cbd5e1; margin-bottom: 25px; line-height: 1.5; }
-        .custom-popup-btn { background: #0284c7; color: white; border: none; padding: 12px 25px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; width: 100%; }
-        .custom-popup-btn:hover { background: #38bdf8; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4); }
+        .bottom-dock { background: rgba(10, 25, 50, 0.85); backdrop-filter: blur(25px); border: 1px solid var(--glass-border); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5); } .dock-item { transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); } .dock-item:hover i { background: var(--cyan-accent); transform: translateY(-8px) scale(1.1); box-shadow: 0 10px 20px var(--cyan-glow); color: white; } .dock-item.exit:hover i { background: #ef4444; box-shadow: 0 10px 20px rgba(239, 68, 68, 0.4); }
+        #globalNoteModal { display: none; position: fixed; inset: 0; z-index: 9999; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); backdrop-filter: blur(12px); padding: 20px; } .modal-input:focus, .modal-textarea:focus { border-color: var(--cyan-accent); }
+        .custom-popup-overlay { position: fixed; inset: 0; z-index: 100000; display: none; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(8px); padding: 20px; } .custom-popup-box { background: #0f0f14; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 30px; max-width: 400px; width: 100%; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); color: white; font-family: 'Plus Jakarta Sans', sans-serif; } .custom-popup-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; color: #22d3ee; } .custom-popup-msg { font-size: 0.95rem; color: #cbd5e1; margin-bottom: 25px; line-height: 1.5; } .custom-popup-btn { background: #0284c7; color: white; border: none; padding: 12px 25px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; width: 100%; } .custom-popup-btn:hover { background: #38bdf8; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4); }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden bg-black text-slate-100">
-
-    <div id="customAlert" class="custom-popup-overlay">
-        <div class="custom-popup-box">
-            <h3 id="alertTitle" class="custom-popup-title">Notification</h3>
-            <p id="alertMessage" class="custom-popup-msg"></p>
-            <button onclick="closeCustomAlert()" class="custom-popup-btn">OK</button>
-        </div>
-    </div>
+    <div id="customAlert" class="custom-popup-overlay"><div class="custom-popup-box"><h3 id="alertTitle" class="custom-popup-title">Notification</h3><p id="alertMessage" class="custom-popup-msg"></p><button onclick="closeCustomAlert()" class="custom-popup-btn">OK</button></div></div>
 
     <aside class="w-[260px] h-full bg-[#0a0a0c] border-r border-white/10 flex flex-col justify-between py-6 z-[1000] hidden md:flex shrink-0">
         <div>
             <div class="flex items-center gap-3 px-6 mb-10 cursor-pointer" onclick="window.location.href='index.html'">
-                <div class="w-9 h-9 bg-cyan-400 rounded flex items-center justify-center shadow-lg shadow-cyan-400/20">
-                    <i class="fa-solid fa-cube text-black text-lg"></i>
-                </div>
+                <div class="w-9 h-9 bg-cyan-600 rounded flex items-center justify-center shadow-lg shadow-cyan-400/20"><i class="fa-solid fa-cube text-white text-lg"></i></div>
                 <span class="text-white text-2xl font-bold tracking-tight">VisiNote</span>
             </div>
             <nav class="flex flex-col gap-2">
-                <a href="main.html" class="flex items-center gap-4 px-6 py-3 mx-2 rounded-xl text-cyan-400 bg-cyan-400/10 border border-cyan-400/20 transition-all">
-                    <i class="fa-solid fa-layer-group text-xl w-6"></i>
-                    <span class="font-medium text-sm tracking-wide">My Workspace</span>
-                </a>
-                <a href="ar-camera.html" class="flex items-center gap-4 px-6 py-3 mx-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all">
-                    <i class="fa-solid fa-camera text-xl w-6"></i>
-                    <span class="font-medium text-sm tracking-wide">AR Camera</span>
-                </a>
-                <a href="ar-camera.html?mode=scan" class="flex items-center gap-4 px-6 py-3 mx-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all">
-                    <i class="fa-solid fa-qrcode text-xl w-6"></i>
-                    <span class="font-medium text-sm tracking-wide">Scan</span>
-                </a>
-                <a href="vault.html" class="flex items-center gap-4 px-6 py-3 mx-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all">
-                    <i class="fa-solid fa-vault text-xl w-6"></i>
-                    <span class="font-medium text-sm tracking-wide">Vault</span>
-                </a>
-                <a href="#" onclick="generateShareLink()" class="flex items-center gap-4 px-6 py-3 mx-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all">
-                    <i class="fa-solid fa-users text-xl w-6"></i>
-                    <span class="font-medium text-sm tracking-wide">Give Access</span>
-                </a>
+                <a href="main.html" class="flex items-center gap-4 px-6 py-3 mx-2 rounded-xl text-cyan-400 bg-cyan-400/10 border border-cyan-400/20 transition-all"><i class="fa-solid fa-layer-group text-xl w-6"></i><span class="font-medium text-sm tracking-wide">My Workspace</span></a>
+                <a href="ar-camera.html" class="flex items-center gap-4 px-6 py-3 mx-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all"><i class="fa-solid fa-camera text-xl w-6"></i><span class="font-medium text-sm tracking-wide">AR Camera</span></a>
+                <a href="ar-camera.html?mode=scan" class="flex items-center gap-4 px-6 py-3 mx-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all"><i class="fa-solid fa-qrcode text-xl w-6"></i><span class="font-medium text-sm tracking-wide">Scan</span></a>
+                <a href="vault.html" class="flex items-center gap-4 px-6 py-3 mx-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all"><i class="fa-solid fa-vault text-xl w-6"></i><span class="font-medium text-sm tracking-wide">Vault</span></a>
+                <a href="#" onclick="generateShareLink()" class="flex items-center gap-4 px-6 py-3 mx-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all"><i class="fa-solid fa-users text-xl w-6"></i><span class="font-medium text-sm tracking-wide">Give Access</span></a>
             </nav>
         </div>
-        <div class="px-4">
-            <button class="logout-trigger flex items-center gap-4 px-6 py-3 w-full rounded-xl text-red-500 hover:bg-red-500/10 transition-all text-left">
-                <i class="fa-solid fa-arrow-right-from-bracket text-xl w-6"></i>
-                <span class="font-medium text-sm tracking-wide">Log Out</span>
-            </button>
-        </div>
+        <div class="px-4"><button class="logout-trigger flex items-center gap-4 px-6 py-3 w-full rounded-xl text-red-500 hover:bg-red-500/10 transition-all text-left"><i class="fa-solid fa-arrow-right-from-bracket text-xl w-6"></i><span class="font-medium text-sm tracking-wide">Log Out</span></button></div>
     </aside>
 
     <main class="flex-1 relative flex flex-col h-full overflow-y-auto dashboard-bg">
-        <div class="bg-blob blob-1"></div>
-        <div class="bg-blob blob-2"></div>
-
+        <div class="bg-blob blob-1"></div><div class="bg-blob blob-2"></div>
         <header class="flex justify-between items-center p-6 md:px-12 z-10 relative border-b border-white/10 bg-[#112d5c]/50 backdrop-blur-md">
-            <div class="md:hidden flex items-center gap-2 font-bold text-xl text-white">Visi<span class="text-cyan-400">Note</span></div>
+            <div class="md:hidden flex items-center gap-2 font-bold text-xl text-white"><i class="fa-solid fa-cube text-cyan-400"></i>VisiNote</div>
             <div class="hidden md:block text-slate-400 text-sm font-medium tracking-widest uppercase">Dashboard</div>
             <div class="flex items-center gap-6">
-                <div class="search-container">
-                    <input type="text" class="search-input" placeholder="Search notes...">
-                    <i class="fa-solid fa-search search-icon"></i>
-                </div>
-                <div class="profile-container text-2xl" title="Profile">
-                    <i class="fa-solid fa-circle-user text-white"></i>
-                </div>
+                <div class="search-container"><input type="text" class="search-input" placeholder="Search notes..."><i class="fa-solid fa-search search-icon"></i></div>
+                <div class="profile-container text-2xl" title="Profile"><i class="fa-solid fa-circle-user text-white"></i></div>
             </div>
         </header>
 
@@ -128,50 +65,23 @@
 
             <section class="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fade-in-up">
                 <div class="glass-card h-[350px]">
-                    <div class="text-lg font-semibold mb-4 flex items-center gap-3 border-b border-white/10 pb-4 text-white">
-                        <i class="fa-regular fa-clock text-cyan-400"></i> Recent Notes
-                    </div>
-                    <div class="recent-notes-list flex-1 flex flex-col gap-3 overflow-y-auto pr-2 mb-4" id="recent-notes-container">
-                        <div class="text-center text-slate-400 text-sm mt-4">Loading notes...</div>
-                    </div>
-                    <button class="add-note-btn self-start flex items-center gap-2 text-white px-6 py-3 rounded-full font-semibold" onclick="openGlobalModal()">
-                        <i class="fa-solid fa-plus"></i> Add Note
-                    </button>
+                    <div class="text-lg font-semibold mb-4 flex items-center gap-3 border-b border-white/10 pb-4 text-white"><i class="fa-regular fa-clock text-cyan-400"></i> Recent Notes</div>
+                    <div class="recent-notes-list flex-1 flex flex-col gap-3 overflow-y-auto pr-2 mb-4" id="recent-notes-container"><div class="text-center text-slate-400 text-sm mt-4">Loading notes...</div></div>
+                    <button class="add-note-btn self-start flex items-center gap-2 text-white px-6 py-3 rounded-full font-semibold" onclick="openGlobalModal()"><i class="fa-solid fa-plus"></i> Add Note</button>
                 </div>
                 <div class="glass-card h-[350px]">
-                    <div class="text-lg font-semibold mb-4 flex items-center gap-3 border-b border-white/10 pb-4 text-white">
-                        <i class="fa-solid fa-chart-simple text-cyan-400"></i> Workspace Stats
-                    </div>
-                    <div class="flex-1 flex flex-col items-center justify-center text-center">
-                        <div class="total-number" id="total-notes-count">0</div>
-                        <div class="mt-3 text-lg text-slate-400 font-medium">Total Notes Count</div>
-                    </div>
+                    <div class="text-lg font-semibold mb-4 flex items-center gap-3 border-b border-white/10 pb-4 text-white"><i class="fa-solid fa-chart-simple text-cyan-400"></i> Workspace Stats</div>
+                    <div class="flex-1 flex flex-col items-center justify-center text-center"><div class="total-number" id="total-notes-count">0</div><div class="mt-3 text-lg text-slate-400 font-medium">Total Notes Count</div></div>
                 </div>
             </section>
         </div>
     </main>
 
     <div class="bottom-dock fixed bottom-5 left-1/2 -translate-x-1/2 rounded-[30px] px-4 py-3 flex gap-4 md:hidden z-[100] w-[95%] justify-around">
-        <div class="dock-item flex flex-col items-center text-slate-400 min-w-[50px]" onclick="window.scrollTo(0,0)">
-            <i class="fa-solid fa-house text-xl w-10 h-10 flex items-center justify-center rounded-xl"></i>
-            <span class="text-[10px] font-bold uppercase mt-1">Home</span>
-        </div>
-        <div class="dock-item flex flex-col items-center text-slate-400 min-w-[50px]" onclick="window.location.href='ar-camera.html'">
-            <i class="fa-solid fa-vr-cardboard text-xl w-10 h-10 flex items-center justify-center rounded-xl"></i>
-            <span class="text-[10px] font-bold uppercase mt-1">AR Mode</span>
-        </div>
-        <div class="dock-item flex flex-col items-center text-slate-400 min-w-[50px]" onclick="window.location.href='ar-camera.html?mode=scan'">
-            <i class="fa-solid fa-qrcode text-xl w-10 h-10 flex items-center justify-center rounded-xl"></i>
-            <span class="text-[10px] font-bold uppercase mt-1">Scan</span>
-        </div>
-        <div class="dock-item flex flex-col items-center text-slate-400 min-w-[50px]" onclick="window.location.href='vault.html'">
-            <i class="fa-solid fa-vault text-xl w-10 h-10 flex items-center justify-center rounded-xl"></i>
-            <span class="text-[10px] font-bold uppercase mt-1">Vault</span>
-        </div>
-        <div class="dock-item exit logout-trigger flex flex-col items-center text-slate-400 min-w-[50px]">
-            <i class="fa-solid fa-arrow-right-from-bracket text-xl w-10 h-10 flex items-center justify-center rounded-xl"></i>
-            <span class="text-[10px] font-bold uppercase mt-1">Exit</span>
-        </div>
+        <div class="dock-item flex flex-col items-center text-slate-400 min-w-[50px]" onclick="window.scrollTo(0,0)"><i class="fa-solid fa-house text-xl w-10 h-10 flex items-center justify-center rounded-xl"></i><span class="text-[10px] font-bold uppercase mt-1">Home</span></div>
+        <div class="dock-item flex flex-col items-center text-slate-400 min-w-[50px]" onclick="window.location.href='ar-camera.html'"><i class="fa-solid fa-vr-cardboard text-xl w-10 h-10 flex items-center justify-center rounded-xl"></i><span class="text-[10px] font-bold uppercase mt-1">AR</span></div>
+        <div class="dock-item flex flex-col items-center text-slate-400 min-w-[50px]" onclick="window.location.href='vault.html'"><i class="fa-solid fa-vault text-xl w-10 h-10 flex items-center justify-center rounded-xl"></i><span class="text-[10px] font-bold uppercase mt-1">Vault</span></div>
+        <div class="dock-item exit logout-trigger flex flex-col items-center text-slate-400 min-w-[50px]"><i class="fa-solid fa-arrow-right-from-bracket text-xl w-10 h-10 flex items-center justify-center rounded-xl"></i><span class="text-[10px] font-bold uppercase mt-1">Exit</span></div>
     </div>
 
     <div id="globalNoteModal">
@@ -185,35 +95,12 @@
     </div>
 
     <script>
-        // Custom Alert Logic
-        window.customAlert = (message, title = "Notification") => {
-            document.getElementById('alertTitle').innerText = title;
-            document.getElementById('alertMessage').innerText = message;
-            document.getElementById('customAlert').style.display = 'flex';
-        };
+        window.customAlert = (message, title = "Notification") => { document.getElementById('alertTitle').innerText = title; document.getElementById('alertMessage').innerText = message; document.getElementById('customAlert').style.display = 'flex'; };
         window.closeCustomAlert = () => document.getElementById('customAlert').style.display = 'none';
-
-        document.addEventListener("DOMContentLoaded", () => {
-            anime({ targets: ['.animate-fade-in'], opacity: [0, 1], duration: 1000, easing: 'easeOutCubic' });
-            anime({ targets: ['.animate-fade-in-up'], translateY: [20, 0], opacity: [0, 1], duration: 1000, delay: 200, easing: 'easeOutCubic' });
-        });
-
+        document.addEventListener("DOMContentLoaded", () => { anime({ targets: ['.animate-fade-in'], opacity: [0, 1], duration: 1000, easing: 'easeOutCubic' }); anime({ targets: ['.animate-fade-in-up'], translateY: [20, 0], opacity: [0, 1], duration: 1000, delay: 200, easing: 'easeOutCubic' }); });
         window.openGlobalModal = () => document.getElementById('globalNoteModal').style.display = 'flex';
-        window.closeGlobalModal = () => {
-            document.getElementById('globalNoteModal').style.display = 'none';
-            document.getElementById('globalNoteTitle').value = "";
-            document.getElementById('globalNoteContent').value = "";
-        };
-
-        window.generateShareLink = () => {
-            if(!window.currentUserUid) return customAlert("Please log in to share your workspace.", "Authentication Required");
-            const link = window.location.origin + "/shared.html?user=" + window.currentUserUid;
-            navigator.clipboard.writeText(link).then(() => {
-                customAlert("Share link copied to clipboard!\n\n" + link, "Success");
-            }).catch(() => {
-                customAlert("Your share link is: \n" + link, "Link Generated");
-            });
-        };
+        window.closeGlobalModal = () => { document.getElementById('globalNoteModal').style.display = 'none'; document.getElementById('globalNoteTitle').value = ""; document.getElementById('globalNoteContent').value = ""; };
+        window.generateShareLink = () => { if(!window.currentUserUid) return customAlert("Please log in to share your workspace.", "Authentication Required"); const link = window.location.origin + "/shared.html?user=" + window.currentUserUid; navigator.clipboard.writeText(link).then(() => { customAlert("Share link copied to clipboard!\n\n" + link, "Success"); }).catch(() => { customAlert("Your share link is: \n" + link, "Link Generated"); }); };
     </script>
 
     <script type="module">
@@ -221,17 +108,8 @@
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, doc, getDoc, collection, query, where, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDfdbA_iCryNL6JuOkZtSaPH3pEfza_rs0",
-            authDomain: "visinote-66f90.firebaseapp.com",
-            projectId: "visinote-66f90",
-            storageBucket: "visinote-66f90.firebasestorage.app",
-            messagingSenderId: "382835155909",
-            appId: "1:382835155909:web:f7f8f44b85f8cdc1dce1ac"
-        };
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        const firebaseConfig = { apiKey: "AIzaSyDfdbA_iCryNL6JuOkZtSaPH3pEfza_rs0", authDomain: "visinote-66f90.firebaseapp.com", projectId: "visinote-66f90", storageBucket: "visinote-66f90.firebasestorage.app", messagingSenderId: "382835155909", appId: "1:382835155909:web:f7f8f44b85f8cdc1dce1ac" };
+        const app = initializeApp(firebaseConfig); const auth = getAuth(app); const db = getFirestore(app);
         window.currentUserUid = null;
 
         const displayNameEl = document.getElementById('display-name');
@@ -239,75 +117,49 @@
         const recentNotesContainer = document.getElementById('recent-notes-container');
         const saveNoteBtn = document.getElementById('globalSaveNoteBtn');
 
+        const getGPSLocation = () => new Promise((resolve) => {
+            if (!navigator.geolocation) return resolve({ lat: null, lng: null });
+            navigator.geolocation.getCurrentPosition( pos => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }), err => resolve({ lat: null, lng: null }), { enableHighAccuracy: true, timeout: 4000 } );
+        });
+
         async function loadDashboardNotes() {
             if (!window.currentUserUid) return;
             try {
                 const q = query(collection(db, "notes"), where("uid", "==", window.currentUserUid));
-                const querySnapshot = await getDocs(q);
-                totalNotesEl.innerText = querySnapshot.size;
-                let notesData = [];
-                querySnapshot.forEach((doc) => { notesData.push({ id: doc.id, ...doc.data() }); });
+                const snap = await getDocs(q); totalNotesEl.innerText = snap.size;
+                let notesData = []; snap.forEach((doc) => { notesData.push({ id: doc.id, ...doc.data() }); });
                 notesData.sort((a, b) => (b.timestamp?.toMillis() || 0) - (a.timestamp?.toMillis() || 0));
                 recentNotesContainer.innerHTML = '';
-                if(notesData.length === 0) {
-                    recentNotesContainer.innerHTML = `<div class="text-center text-slate-400 text-sm mt-4">No notes yet. Add one!</div>`;
-                    return;
-                }
-                const topNotes = notesData.slice(0, 5);
-                topNotes.forEach(note => {
-                    const noteEl = document.createElement('div');
-                    noteEl.className = 'note-item';
+                if(notesData.length === 0) { recentNotesContainer.innerHTML = `<div class="text-center text-slate-400 text-sm mt-4">No notes yet. Add one!</div>`; return; }
+                notesData.slice(0, 5).forEach(note => {
+                    const el = document.createElement('div'); el.className = 'note-item';
                     const dateStr = note.timestamp ? note.timestamp.toDate().toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : new Date().toLocaleDateString();
-                    noteEl.innerHTML = `<h4 class="font-semibold mb-[2px] text-white">${note.title || 'Untitled'}</h4><span class="text-[11px] text-slate-400">Added ${dateStr}</span>`;
-                    recentNotesContainer.appendChild(noteEl);
+                    el.innerHTML = `<h4 class="font-semibold mb-[2px] text-white">${note.title || 'Untitled'}</h4><span class="text-[11px] text-slate-400">Added ${dateStr}</span>`;
+                    recentNotesContainer.appendChild(el);
                 });
-            } catch(err) {
-                recentNotesContainer.innerHTML = `<div class="text-red-500 text-sm text-center">Error loading notes.</div>`;
-            }
+            } catch(err) { recentNotesContainer.innerHTML = `<div class="text-red-500 text-sm text-center">Error loading notes.</div>`; }
         }
 
         saveNoteBtn.addEventListener('click', async (e) => {
-            e.preventDefault();
-            const title = document.getElementById("globalNoteTitle").value.trim();
-            const content = document.getElementById("globalNoteContent").value.trim();
-            if (!window.currentUserUid) return customAlert("Error: User session not found. Please log in again.", "Error");
-            if (!title || !content) return customAlert("Please fill out the title and description!", "Input Required");
-
-            saveNoteBtn.innerText = "Processing...";
-            saveNoteBtn.style.opacity = "0.7";
+            e.preventDefault(); const title = document.getElementById("globalNoteTitle").value.trim(); const content = document.getElementById("globalNoteContent").value.trim();
+            if (!window.currentUserUid) return customAlert("User session not found.", "Error"); if (!title || !content) return customAlert("Fill out title and description!", "Required");
+            saveNoteBtn.innerText = "Getting Location..."; saveNoteBtn.style.opacity = "0.7";
+            const coords = await getGPSLocation(); saveNoteBtn.innerText = "Processing...";
             try {
-                await addDoc(collection(db, "notes"), { uid: window.currentUserUid, title, content, timestamp: serverTimestamp(), x: 0, y: 1.6, z: -2 });
-                window.closeGlobalModal();
-                saveNoteBtn.innerText = "Save to Workspace";
-                saveNoteBtn.style.opacity = "1";
-                loadDashboardNotes();
-            } catch (err) {
-                customAlert("Failed to save note.", "Error");
-                saveNoteBtn.innerText = "Save to Workspace";
-                saveNoteBtn.style.opacity = "1";
-            }
+                await addDoc(collection(db, "notes"), { uid: window.currentUserUid, title, content, timestamp: serverTimestamp(), x: 0, y: 1.6, z: -2, lat: coords.lat, lng: coords.lng });
+                window.closeGlobalModal(); saveNoteBtn.innerText = "Save to Workspace"; saveNoteBtn.style.opacity = "1"; loadDashboardNotes();
+            } catch (err) { customAlert("Failed to save.", "Error"); saveNoteBtn.innerText = "Save to Workspace"; saveNoteBtn.style.opacity = "1"; }
         });
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 window.currentUserUid = user.uid;
-                try {
-                    const userSnap = await getDoc(doc(db, "users", user.uid));
-                    if (userSnap.exists()) {
-                        const userData = userSnap.data();
-                        displayNameEl.innerText = userData.firstName || userData.username || "User";
-                    } else { displayNameEl.innerText = user.displayName || user.email.split('@')[0]; }
-                } catch(err) { displayNameEl.innerText = "User"; }
+                try { const userSnap = await getDoc(doc(db, "users", user.uid)); if (userSnap.exists()) { displayNameEl.innerText = userSnap.data().firstName || userSnap.data().username || "User"; } else { displayNameEl.innerText = user.displayName || user.email.split('@')[0]; } } catch(err) { displayNameEl.innerText = "User"; }
                 loadDashboardNotes();
-            }
+            } else { window.location.href = "loginPage.html"; }
         });
 
-        document.querySelectorAll('.logout-trigger').forEach(btn => {
-            btn.addEventListener('click', () => {
-                signOut(auth).then(() => { window.location.href = "index.html"; })
-                .catch((error) => customAlert("Error logging out: " + error.message, "Error"));
-            });
-        });
+        document.querySelectorAll('.logout-trigger').forEach(btn => { btn.addEventListener('click', () => { signOut(auth).then(() => { window.location.href = "index.html"; }); }); });
     </script>
 </body>
 </html>
