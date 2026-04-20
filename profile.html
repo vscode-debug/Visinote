@@ -1,1 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VisiNote | My Profile</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
 
+    <style>
+        :root {
+            --bg-main: #112d5c;       
+            --glass-bg: rgba(255, 255, 255, 0.05);  
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            --cyan-accent: #0284c7;      
+            --cyan-glow: rgba(2, 132, 199, 0.4); 
+            --text-main: #f8fafc;        
+            --text-muted: #94a3b8;      
+        }
+
+        * { font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; padding: 0; box-sizing: border-box; text-decoration: none; list-style: none; }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            overflow-x: hidden;
+            min-height: 100vh;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        /* Cyan & Emerald Green Blobs */
+        .bg-blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.6; z-index: 0; pointer-events: none; animation: drift alternate infinite ease-in-out; }
+        .blob-1 { width: 600px; height: 600px; background: #0284c7; top: -10%; left: -10%; animation-duration: 25s; }
+        .blob-2 { width: 700px; height: 700px; background: #10b981; bottom: -20%; right: -10%; animation-duration: 28s; animation-delay: -5s; }
+
+        @keyframes drift {
+            0% { transform: translate(0px, 0px) scale(1); }
+            33% { transform: translate(50px, -50px) scale(1.1); }
+            66% { transform: translate(-40px, 60px) scale(0.9); }
+            100% { transform: translate(20px, 20px) scale(1.05); }
+        }
+
+        .glass-card {
+            background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border);
+            border-radius: 24px; padding: 40px; box-shadow: var(--glass-shadow);
+            position: relative; 
+        }
+
+        .header { padding: 20px 50px; background: rgba(17, 45, 92, 0.5); backdrop-filter: blur(15px); border-bottom: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: space-between; z-index: 10; position: relative;}
+        .back-btn { display: flex; align-items: center; gap: 10px; color: var(--text-muted); cursor: pointer; transition: 0.3s; font-weight: 600; }
+        .back-btn:hover { color: var(--cyan-accent); }
+        
+        .input-read-only {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #cbd5e1;
+            padding: 12px 16px;
+            border-radius: 12px;
+            width: 100%;
+            outline: none;
+            cursor: default;
+        }
+
+        .stat-box {
+            background: rgba(2, 132, 199, 0.1);
+            border: 1px solid rgba(2, 132, 199, 0.3);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) { .header { padding: 15px 20px; } }
+    </style>
+</head>
+<body>
+
+    <div class="bg-blob blob-1"></div>
+    <div class="bg-blob blob-2"></div>
+
+    <header class="header">
+        <a href="main.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
+        <div class="text-xl font-bold text-white"><i class="fa-solid fa-user text-emerald-400 mr-2"></i> My <span>Profile</span></div>
+        <div style="width: 100px;" class="hidden md:block"></div>
+    </header>
+
+    <div class="max-w-4xl mx-auto p-6 md:p-12 relative z-10">
+        
+        <div class="glass-card flex flex-col md:flex-row gap-10 items-center md:items-start animate-fade-in">
+            
+            <div class="flex flex-col items-center gap-4">
+                <img id="userAvatar" src="https://ui-avatars.com/api/?name=User&background=0284c7&color=fff&size=256" alt="Avatar" class="w-32 h-32 rounded-full border-4 border-cyan-500/30 shadow-lg shadow-cyan-500/20">
+                <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-4 py-1 rounded-full text-xs font-bold tracking-widest uppercase">Verified User</span>
+            </div>
+
+            <div class="flex-1 w-full">
+                <div class="mb-8 text-center md:text-left">
+                    <h1 id="userNameDisplay" class="text-4xl font-bold text-white mb-1">Loading...</h1>
+                    <p id="userHandleDisplay" class="text-cyan-400 font-medium text-lg">@loading</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div>
+                        <label class="block text-sm text-slate-400 mb-2 font-semibold tracking-wide uppercase">First Name</label>
+                        <input type="text" id="profFirstName" class="input-read-only" readonly value="...">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-slate-400 mb-2 font-semibold tracking-wide uppercase">Last Name</label>
+                        <input type="text" id="profLastName" class="input-read-only" readonly value="...">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm text-slate-400 mb-2 font-semibold tracking-wide uppercase">Email Address</label>
+                        <input type="text" id="profEmail" class="input-read-only" readonly value="...">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-8">
+                    <div class="stat-box">
+                        <i class="fa-solid fa-cube text-2xl text-cyan-400 mb-2"></i>
+                        <h3 id="statTotalNotes" class="text-3xl font-bold text-white">0</h3>
+                        <p class="text-xs text-cyan-200 uppercase tracking-wider mt-1">Spatial Anchors</p>
+                    </div>
+                    <div class="stat-box" style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3);">
+                        <i class="fa-solid fa-calendar-days text-2xl text-emerald-400 mb-2"></i>
+                        <h3 id="statJoinDate" class="text-xl font-bold text-white mt-2">...</h3>
+                        <p class="text-xs text-emerald-200 uppercase tracking-wider mt-2">Member Since</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t border-white/10">
+                    <button class="flex-1 bg-red-500/20 hover:bg-red-500 text-red-500 hover:text-white border border-red-500/50 py-3 rounded-xl font-bold transition-all" id="logoutBtn">
+                        <i class="fa-solid fa-arrow-right-from-bracket mr-2"></i> Sign Out
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => { 
+            anime({ targets: '.animate-fade-in', translateY: [20, 0], opacity: [0, 1], duration: 800, easing: 'easeOutCubic' }); 
+        });
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDfdbA_iCryNL6JuOkZtSaPH3pEfza_rs0",
+            authDomain: "visinote-66f90.firebaseapp.com",
+            projectId: "visinote-66f90",
+            storageBucket: "visinote-66f90.firebasestorage.app",
+            messagingSenderId: "382835155909",
+            appId: "1:382835155909:web:f7f8f44b85f8cdc1dce1ac"
+        };
+        
+        const app = initializeApp(firebaseConfig); 
+        const auth = getAuth(app); 
+        const db = getFirestore(app);
+
+        // Fetch User Data
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try { 
+                    // 1. Fetch Profile Data
+                    const userSnap = await getDoc(doc(db, "users", user.uid)); 
+                    let firstName = "User";
+                    let lastName = "";
+                    let username = user.email.split('@')[0];
+
+                    if (userSnap.exists()) { 
+                        const data = userSnap.data();
+                        firstName = data.firstName || "";
+                        lastName = data.lastName || "";
+                        username = data.username || username;
+
+                        // Format Join Date
+                        if(data.createdAt) {
+                            const date = data.createdAt.toDate();
+                            document.getElementById('statJoinDate').innerText = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                        } else {
+                            document.getElementById('statJoinDate').innerText = "2026";
+                        }
+                    }
+
+                    // Update UI
+                    document.getElementById('userNameDisplay').innerText = `${firstName} ${lastName}`.trim();
+                    document.getElementById('userHandleDisplay').innerText = `@${username}`;
+                    document.getElementById('profFirstName').value = firstName;
+                    document.getElementById('profLastName').value = lastName;
+                    document.getElementById('profEmail').value = user.email;
+                    
+                    // Update Avatar
+                    document.getElementById('userAvatar').src = `https://ui-avatars.com/api/?name=${firstName}+${lastName}&background=0284c7&color=fff&size=256`;
+
+                    // 2. Fetch Total Notes Count
+                    const q = query(collection(db, "notes"), where("uid", "==", user.uid));
+                    const notesSnap = await getDocs(q); 
+                    document.getElementById('statTotalNotes').innerText = notesSnap.size;
+
+                } catch(err) { 
+                    console.error("Error loading profile:", err);
+                }
+            } else { 
+                window.location.href = "loginPage.html"; 
+            }
+        });
+
+        // Handle Logout
+        document.getElementById('logoutBtn').addEventListener('click', () => { 
+            signOut(auth).then(() => { window.location.href = "index.html"; }); 
+        });
+    </script>
+</body>
+</html>
