@@ -175,7 +175,7 @@
                     <input type="text" class="search-input" placeholder="Search notes...">
                     <i class="fa-solid fa-search search-icon"></i>
                 </div>
-                <div class="profile-container text-2xl cursor-pointer hover:scale-110 transition-transform" title="Profile">
+                <div class="profile-container text-2xl cursor-pointer hover:scale-110 transition-transform" title="Profile" onclick="window.location.href='profile.html'">
                     <i class="fa-solid fa-circle-user text-white"></i>
                 </div>
             </div>
@@ -403,7 +403,8 @@
                 try { 
                     const userSnap = await getDoc(doc(db, "users", user.uid)); 
                     if (userSnap.exists()) { 
-                        displayNameEl.innerText = userSnap.data().firstName || userSnap.data().username || "User"; 
+                        const userData = userSnap.data();
+                        displayNameEl.innerText = userData.firstName || userData.username || "User"; 
                     } else { 
                         displayNameEl.innerText = user.displayName || user.email.split('@')[0]; 
                     } 
