@@ -23,14 +23,7 @@
             --text-muted: #94a3b8;      
         }
 
-        * {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            text-decoration: none;
-            list-style: none;
-        }
+        * { font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; padding: 0; box-sizing: border-box; text-decoration: none; list-style: none; }
 
         .dashboard-bg {
             background-color: var(--bg-main);
@@ -39,44 +32,19 @@
             background-size: 40px 40px;
         }
 
-        /* Cyan & Emerald Green Blobs */
-        .bg-blob {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(90px);
-            opacity: 0.6;
-            z-index: 0;
-            pointer-events: none;
-            animation: drift alternate infinite ease-in-out;
-        }
+        .bg-blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.6; z-index: 0; pointer-events: none; animation: drift alternate infinite ease-in-out; }
         .blob-1 { width: 600px; height: 600px; background: #0284c7; top: -10%; left: -10%; animation-duration: 25s; }
         .blob-2 { width: 700px; height: 700px; background: #10b981; bottom: -20%; right: -10%; animation-duration: 28s; animation-delay: -5s; }
 
-        @keyframes drift {
-            0% { transform: translate(0px, 0px) scale(1); }
-            33% { transform: translate(50px, -50px) scale(1.1); }
-            66% { transform: translate(-40px, 60px) scale(0.9); }
-            100% { transform: translate(20px, 20px) scale(1.05); }
-        }
+        @keyframes drift { 0% { transform: translate(0px, 0px) scale(1); } 33% { transform: translate(50px, -50px) scale(1.1); } 66% { transform: translate(-40px, 60px) scale(0.9); } 100% { transform: translate(20px, 20px) scale(1.05); } }
 
         .search-container { position: relative; display: flex; align-items: center; }
-        .search-input {
-            width: 40px; height: 40px; border-radius: 20px; border: 1px solid transparent;
-            background: transparent; padding: 0 15px 0 40px; color: var(--text-main); font-size: 14px;
-            transition: all 0.4s ease; cursor: pointer;
-        }
-        .search-input:focus, .search-container:hover .search-input {
-            width: 250px; background: var(--glass-bg); border: 1px solid var(--glass-border); cursor: text;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
-        }
+        .search-input { width: 40px; height: 40px; border-radius: 20px; border: 1px solid transparent; background: transparent; padding: 0 15px 0 40px; color: var(--text-main); font-size: 14px; transition: all 0.4s ease; cursor: pointer; }
+        .search-input:focus, .search-container:hover .search-input { width: 250px; background: var(--glass-bg); border: 1px solid var(--glass-border); cursor: text; box-shadow: inset 0 0 10px rgba(0,0,0,0.1); }
         .search-icon { position: absolute; left: 12px; color: var(--text-muted); pointer-events: none; transition: color 0.3s; }
         .search-input:focus ~ .search-icon, .search-container:hover .search-icon { color: var(--cyan-accent); }
 
-        .glass-card {
-            background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border);
-            border-radius: 24px; padding: 30px; box-shadow: var(--glass-shadow);
-            position: relative; display: flex; flex-direction: column;
-        }
+        .glass-card { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 24px; padding: 30px; box-shadow: var(--glass-shadow); position: relative; display: flex; flex-direction: column; }
 
         .recent-notes-list::-webkit-scrollbar { width: 6px; }
         .recent-notes-list::-webkit-scrollbar-thumb { background: rgba(2, 132, 199, 0.5); border-radius: 10px; }
@@ -104,6 +72,34 @@
         .custom-popup-msg { font-size: 0.95rem; color: #cbd5e1; margin-bottom: 25px; line-height: 1.5; }
         .custom-popup-btn { background: #0284c7; color: white; border: none; padding: 12px 25px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; width: 100%; }
         .custom-popup-btn:hover { background: #38bdf8; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4); }
+
+        /* --- NEW: GOOGLE STYLE PROFILE RING --- */
+        .google-ring {
+            border-radius: 50%;
+            padding: 3px; /* Thickness of the ring */
+            background: conic-gradient(
+                #ea4335 0deg 90deg,   /* Red */
+                #fbbc05 90deg 180deg, /* Yellow */
+                #34a853 180deg 270deg,/* Green */
+                #4285f4 270deg 360deg /* Blue */
+            );
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .google-ring-inner {
+            background-color: #5c6bc0; /* The blueish center from your screenshot */
+            color: white;
+            border-radius: 50%;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: 2px solid #0f172a; /* Creates the dark gap between ring and letter */
+        }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden bg-black text-slate-100">
@@ -175,9 +171,15 @@
                     <input type="text" class="search-input" placeholder="Search notes...">
                     <i class="fa-solid fa-search search-icon"></i>
                 </div>
-                <div class="profile-container text-2xl cursor-pointer hover:scale-110 transition-transform" title="Profile" onclick="window.location.href='profile.html'">
-                    <i class="fa-solid fa-circle-user text-white"></i>
+                
+                <div class="profile-container cursor-pointer hover:scale-110 transition-transform" title="Profile" onclick="window.location.href='profile.html'">
+                    <div class="google-ring w-10 h-10 shadow-lg">
+                        <div class="google-ring-inner" id="nav-profile-initial">
+                            <i class="fa-solid fa-user text-[14px]"></i>
+                        </div>
+                    </div>
                 </div>
+
             </div>
         </header>
 
@@ -313,6 +315,7 @@
         window.currentUserUid = null;
 
         const displayNameEl = document.getElementById('display-name');
+        const profileInitialEl = document.getElementById('nav-profile-initial'); // NEW: Targets the inner ring
         const totalNotesEl = document.getElementById('total-notes-count');
         const recentNotesContainer = document.getElementById('recent-notes-container');
         const saveNoteBtn = document.getElementById('globalSaveNoteBtn');
@@ -345,7 +348,6 @@
                     return; 
                 }
                 
-                // Display top 5 notes
                 notesData.slice(0, 5).forEach(note => {
                     const el = document.createElement('div'); 
                     el.className = 'note-item';
@@ -381,7 +383,7 @@
                     title, 
                     content, 
                     timestamp: serverTimestamp(), 
-                    x: 0, y: 1.6, z: -2, // Default AR coordinates for dashboard entries
+                    x: 0, y: 1.6, z: -2, 
                     lat: coords.lat, 
                     lng: coords.lng 
                 });
@@ -400,15 +402,24 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 window.currentUserUid = user.uid;
+                let userInitial = "U";
+                
                 try { 
                     const userSnap = await getDoc(doc(db, "users", user.uid)); 
                     if (userSnap.exists()) { 
                         const userData = userSnap.data();
                         displayNameEl.innerText = userData.firstName || userData.username || "User"; 
+                        // Grab the first letter for the avatar
+                        userInitial = userData.firstName ? userData.firstName.charAt(0).toUpperCase() : userData.username.charAt(0).toUpperCase();
                     } else { 
                         displayNameEl.innerText = user.displayName || user.email.split('@')[0]; 
+                        userInitial = user.displayName ? user.displayName.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase();
                     } 
                 } catch(err) { displayNameEl.innerText = "User"; }
+                
+                // Update the new profile ring with the letter
+                profileInitialEl.innerText = userInitial;
+                
                 loadDashboardNotes();
             } else { 
                 window.location.href = "loginPage.html"; 
