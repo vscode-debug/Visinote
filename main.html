@@ -72,34 +72,12 @@
         .custom-popup-msg { font-size: 0.95rem; color: #cbd5e1; margin-bottom: 25px; line-height: 1.5; }
         .custom-popup-btn { background: #0284c7; color: white; border: none; padding: 12px 25px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; width: 100%; }
         .custom-popup-btn:hover { background: #38bdf8; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4); }
+        .custom-popup-btn-cancel { background: transparent; color: white; border: 1px solid rgba(255,255,255,0.2); padding: 12px 25px; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.3s; width: 100%; }
+        .custom-popup-btn-cancel:hover { background: rgba(255,255,255,0.1); }
+        .custom-popup-actions { display: flex; gap: 15px; }
 
-        /* --- NEW: GOOGLE STYLE PROFILE RING --- */
-        .google-ring {
-            border-radius: 50%;
-            padding: 3px; /* Thickness of the ring */
-            background: conic-gradient(
-                #ea4335 0deg 90deg,   /* Red */
-                #fbbc05 90deg 180deg, /* Yellow */
-                #34a853 180deg 270deg,/* Green */
-                #4285f4 270deg 360deg /* Blue */
-            );
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .google-ring-inner {
-            background-color: #5c6bc0; /* The blueish center from your screenshot */
-            color: white;
-            border-radius: 50%;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.1rem;
-            font-weight: 600;
-            border: 2px solid #0f172a; /* Creates the dark gap between ring and letter */
-        }
+        .google-ring { border-radius: 50%; padding: 3px; background: conic-gradient( #ea4335 0deg 90deg, #fbbc05 90deg 180deg, #34a853 180deg 270deg, #4285f4 270deg 360deg ); display: flex; align-items: center; justify-content: center; }
+        .google-ring-inner { background-color: #5c6bc0; color: white; border-radius: 50%; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 600; border: 2px solid #0f172a; }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden bg-black text-slate-100">
@@ -109,6 +87,18 @@
             <h3 id="alertTitle" class="custom-popup-title">Notification</h3>
             <p id="alertMessage" class="custom-popup-msg"></p>
             <button onclick="closeCustomAlert()" class="custom-popup-btn">OK</button>
+        </div>
+    </div>
+
+    <div id="nearbyModal" class="custom-popup-overlay">
+        <div class="custom-popup-box" style="border-color: rgba(16, 185, 129, 0.3); box-shadow: 0 20px 50px rgba(16, 185, 129, 0.2);">
+            <i class="fa-solid fa-location-crosshairs text-5xl text-emerald-400 mb-4 animate-pulse"></i>
+            <h3 class="custom-popup-title" style="color: #10b981;">Notes Nearby!</h3>
+            <p id="nearbyMessage" class="custom-popup-msg">You have spatial notes within a 100-meter radius.</p>
+            <div class="custom-popup-actions">
+                <button onclick="document.getElementById('nearbyModal').style.display='none'" class="custom-popup-btn-cancel">Dismiss</button>
+                <button onclick="window.location.href='ar-camera.html'" class="custom-popup-btn" style="background: #10b981; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);">Open AR View</button>
+            </div>
         </div>
     </div>
 
@@ -179,7 +169,6 @@
                         </div>
                     </div>
                 </div>
-
             </div>
         </header>
 
@@ -291,14 +280,26 @@
                 customAlert("Your share link is: \n" + link, "Link Generated"); 
             }); 
         };
+
+        // NEW: Haversine Formula to calculate distance in meters
+        window.getDistanceInMeters = (lat1, lon1, lat2, lon2) => {
+            const R = 6371e3; // Earth's radius in meters
+            const p1 = lat1 * Math.PI/180;
+            const p2 = lat2 * Math.PI/180;
+            const dp = (lat2-lat1) * Math.PI/180;
+            const dl = (lon2-lon1) * Math.PI/180;
+
+            const a = Math.sin(dp/2) * Math.sin(dp/2) + Math.cos(p1) * Math.cos(p2) * Math.sin(dl/2) * Math.sin(dl/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c; 
+        };
     </script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, doc, getDoc, collection, query, where, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-        // Your Firebase config
+        
         const firebaseConfig = {
          apiKey: "AIzaSyDvlMI_dW10lcofsCzPiPdhZWUHm2e30FI",
             authDomain: "visinote2.firebaseapp.com",
@@ -307,7 +308,7 @@
             messagingSenderId: "488531550663",
             appId: "1:488531550663:web:bc0e76bb2ab554aa2cf9e2",
             measurementId: "G-635YS6F1X6"
-            };
+        };
         
         const app = initializeApp(firebaseConfig); 
         const auth = getAuth(app); 
@@ -316,10 +317,14 @@
         window.currentUserUid = null;
 
         const displayNameEl = document.getElementById('display-name');
-        const profileInitialEl = document.getElementById('nav-profile-initial'); // NEW: Targets the inner ring
+        const profileInitialEl = document.getElementById('nav-profile-initial');
         const totalNotesEl = document.getElementById('total-notes-count');
         const recentNotesContainer = document.getElementById('recent-notes-container');
         const saveNoteBtn = document.getElementById('globalSaveNoteBtn');
+
+        // NEW: Geofencing state variables
+        let loadedNotesData = [];
+        let hasNotifiedNearby = false;
 
         // GPS Fetcher
         const getGPSLocation = () => new Promise((resolve) => {
@@ -330,6 +335,40 @@
                 { enableHighAccuracy: true, timeout: 4000 } 
             );
         });
+
+        // NEW: Proximity Tracker Function
+        function startProximityTracking() {
+            if(!navigator.geolocation) return;
+            
+            navigator.geolocation.watchPosition((position) => {
+                // If we already told them, or they have no notes, skip to save resources
+                if(hasNotifiedNearby || loadedNotesData.length === 0) return;
+                
+                const userLat = position.coords.latitude;
+                const userLng = position.coords.longitude;
+                let nearbyCount = 0;
+                
+                // Check distance against every saved note
+                loadedNotesData.forEach(note => {
+                    if(note.lat && note.lng) {
+                        const distance = window.getDistanceInMeters(userLat, userLng, note.lat, note.lng);
+                        if(distance <= 100) { // Check if within 100 meters
+                            nearbyCount++;
+                        }
+                    }
+                });
+                
+                // Trigger Modal
+                if(nearbyCount > 0) {
+                    hasNotifiedNearby = true; // Lock it so it doesn't spam
+                    document.getElementById('nearbyMessage').innerText = `You have ${nearbyCount} spatial note(s) within a 100-meter radius! Do you want to check them out?`;
+                    document.getElementById('nearbyModal').style.display = 'flex';
+                }
+                
+            }, (error) => {
+                console.log("GPS Proximity Tracking error:", error);
+            }, { enableHighAccuracy: true });
+        }
 
         // Load Notes from Firestore
         async function loadDashboardNotes() {
@@ -343,6 +382,10 @@
                 snap.forEach((doc) => { notesData.push({ id: doc.id, ...doc.data() }); });
                 notesData.sort((a, b) => (b.timestamp?.toMillis() || 0) - (a.timestamp?.toMillis() || 0));
                 
+                // Save globally for our GPS tracker
+                loadedNotesData = notesData;
+                startProximityTracking();
+
                 recentNotesContainer.innerHTML = '';
                 if(notesData.length === 0) { 
                     recentNotesContainer.innerHTML = `<div class="text-center text-slate-400 text-sm mt-4">No notes yet. Add one!</div>`; 
@@ -410,7 +453,6 @@
                     if (userSnap.exists()) { 
                         const userData = userSnap.data();
                         displayNameEl.innerText = userData.firstName || userData.username || "User"; 
-                        // Grab the first letter for the avatar
                         userInitial = userData.firstName ? userData.firstName.charAt(0).toUpperCase() : userData.username.charAt(0).toUpperCase();
                     } else { 
                         displayNameEl.innerText = user.displayName || user.email.split('@')[0]; 
@@ -418,9 +460,7 @@
                     } 
                 } catch(err) { displayNameEl.innerText = "User"; }
                 
-                // Update the new profile ring with the letter
                 profileInitialEl.innerText = userInitial;
-                
                 loadDashboardNotes();
             } else { 
                 window.location.href = "loginPage.html"; 
